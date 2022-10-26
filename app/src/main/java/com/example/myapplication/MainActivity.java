@@ -24,6 +24,7 @@ import com.example.myapplication.datahandlers.RecyclerTransactionAdapter;
 import com.example.myapplication.inter.AddTransactionActivity;
 import com.example.myapplication.inter.CategoriesActivity;
 import com.example.myapplication.mainfragments.MainFragmentAdapter;
+import com.example.myapplication.mainfragments.TransactionsFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
@@ -45,6 +46,11 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setTitle("Budget Handler");
+
+        // Call this for guarantee calling in right order
+        CategoriesHandler ch = new CategoriesHandler(this);
+        TransactionHandler th = new TransactionHandler(this);
+
 
 /*        // Find the Recycler view and setup method to be called when item is pressed
         transaction_list = (RecyclerView) findViewById(R.id.transaction_recycler_view);

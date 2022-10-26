@@ -8,8 +8,6 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import androidx.annotation.Nullable;
 
-import com.example.myapplication.inter.CategoriesActivity;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -19,9 +17,9 @@ import java.util.Map;
 public class CategoriesHandler extends SQLiteOpenHelper {
 
     public static final String CATEGORIES_TABLE = "CATEGORIES";
-    public static final String NAME = "NAME";
-    private static final String TYPE = "TYPE";
-    private static final String ID = "ID";
+    public static final String CATEGORIES_NAME = "NAME";
+    private static final String CATEGORIES_TYPE = "TYPE";
+    private static final String CATEGORIES_ID = "ID";
 
     public static final String TYPE_EXPENSE="Expense";
     public static final String TYPE_INCOME="Income";
@@ -34,8 +32,8 @@ public class CategoriesHandler extends SQLiteOpenHelper {
     @Override
     public void onCreate(SQLiteDatabase db) {
         //category_name
-        String create_table_statement = "CREATE TABLE " + CATEGORIES_TABLE + " (" + ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
-                NAME +" TEXT," + TYPE + " TEXT)";
+        String create_table_statement = "CREATE TABLE " + CATEGORIES_TABLE + " (" + CATEGORIES_ID + " INTEGER PRIMARY KEY AUTOINCREMENT," +
+                CATEGORIES_NAME +" TEXT," + CATEGORIES_TYPE + " TEXT)";
 
         db.execSQL(create_table_statement);
 
@@ -48,7 +46,7 @@ public class CategoriesHandler extends SQLiteOpenHelper {
 
     public boolean addCategory(CategoriesModel category_model){
         SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = transformModel(category_model);
+        ContentValues cv = categoriesModelToCursor(category_model);
 
         final long insert = db.insert(CATEGORIES_TABLE, null, cv);
         db.close();
@@ -58,7 +56,7 @@ public class CategoriesHandler extends SQLiteOpenHelper {
     public boolean deleteCategory(int category_id){
         SQLiteDatabase db = this.getWritableDatabase();
         // Execute query and get result (should delete only one element)
-        final int deleted_rows=db.delete(CATEGORIES_TABLE,ID + "=?" ,new String[]{String.valueOf(category_id)});
+        final int deleted_rows=db.delete(CATEGORIES_TABLE, CATEGORIES_ID + "=?" ,new String[]{String.valueOf(category_id)});
         final boolean return_value= deleted_rows > 0;
 
         // todo : ensure consistency (no transaction of this category)
@@ -94,7 +92,7 @@ public class CategoriesHandler extends SQLiteOpenHelper {
 
     public List<CategoriesModel> getAllCategories(String type){
         List<CategoriesModel> returnList = new ArrayList<>();
-        String query = "SELECT * FROM " + CATEGORIES_TABLE + " WHERE "+ TYPE +" = \""+ type +"\"";
+        String query = "SELECT * FROM " + CATEGORIES_TABLE + " WHERE "+ CATEGORIES_TYPE +" = \""+ type +"\"";
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor  = db.rawQuery(query,null);
@@ -119,15 +117,15 @@ public class CategoriesHandler extends SQLiteOpenHelper {
 
     public Map<String,Float> getAllCategoriesSum(TransactionHandler th,String type,int year, int month){
          // Call the groupby function of the transaction handler
-         Map<String,Float> values = th.groupBy(type,TransactionHandler.CATEGORY,year,month);
+         Map<String,Float> values = th.groupTransactionsBy(type,TransactionHandler.TRANSACTIONS_CATEGORY_NAME,year,month);
 
          return values;
     }
 
-    protected ContentValues transformModel(CategoriesModel cm){
+    protected ContentValues categoriesModelToCursor(CategoriesModel cm){
         ContentValues cv = new ContentValues();
-        cv.put(NAME,cm.getName());
-        cv.put(TYPE,cm.getType());
+        cv.put(CATEGORIES_NAME,cm.getName());
+        cv.put(CATEGORIES_TYPE,cm.getType());
         return cv;
     }
 
