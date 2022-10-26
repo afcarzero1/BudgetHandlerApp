@@ -13,19 +13,19 @@ import com.example.myapplication.R;
 
 import java.util.ArrayList;
 
-public class recyclerTransactionAdapter extends RecyclerView.Adapter<recyclerTransactionAdapter.MyViewHolder> {
-    private ArrayList<TransactionModel> transaction_list;
+public class RecyclerTransactionAdapter extends RecyclerView.Adapter<RecyclerTransactionAdapter.MyViewHolder> {
+    private ArrayList<TransactionModel> transactionList;
 
-    public recyclerTransactionAdapter(ArrayList<TransactionModel> transaction_list){
-        this.transaction_list =transaction_list;
+    public RecyclerTransactionAdapter(ArrayList<TransactionModel> transaction_list){
+        this.transactionList =transaction_list;
     }
 
     public TransactionModel getItem(int position){
-        return this.transaction_list.get(position);
+        return this.transactionList.get(position);
     }
 
     public ArrayList<TransactionModel> getArray(){
-        return this.transaction_list;
+        return this.transactionList;
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
@@ -48,31 +48,31 @@ public class recyclerTransactionAdapter extends RecyclerView.Adapter<recyclerTra
 
     @NonNull
     @Override
-    public recyclerTransactionAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerTransactionAdapter.MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.transaction_items,parent,false);
         return new MyViewHolder(itemView);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull recyclerTransactionAdapter.MyViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerTransactionAdapter.MyViewHolder holder, int position) {
         // Here we bind the data to the view
-        String category = transaction_list.get(position).getCategory();
-        String date = transaction_list.get(position).getInitial_date();
-        String type = transaction_list.get(position).getType();
-        String value = transaction_list.get(position).getValue().toString();
+        String category = transactionList.get(position).getCategory();
+        String date = transactionList.get(position).getInitial_date();
+        String type = transactionList.get(position).getType();
+        String value = transactionList.get(position).getValue().toString();
 
 
         holder.category_textView.setText(category);
         holder.date.setText(date);
         holder.type.setText(type);
         holder.value.setText(value);
-        holder.id=transaction_list.get(position).getId();
+        holder.id= transactionList.get(position).getId();
 
     }
 
     @Override
     public int getItemCount() {
         // Give the size of the list
-        return transaction_list.size();
+        return transactionList.size();
     }
 }

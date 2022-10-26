@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.myapplication.R;
 
 import com.example.myapplication.datahandlers.CategoriesModel;
-import com.example.myapplication.datahandlers.recyclerTransactionAdapter;
 
 import java.util.ArrayList;
 

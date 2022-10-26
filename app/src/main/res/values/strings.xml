@@ -16,4 +16,6 @@
     <string name="date_categories">Date</string>
     <string name="type">Type</string>
     <string name="transactions_title">Transactions</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

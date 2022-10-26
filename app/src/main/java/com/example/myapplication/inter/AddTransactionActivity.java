@@ -28,10 +28,9 @@ import com.example.myapplication.datahandlers.TransactionModel;
 
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -47,6 +46,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     String transaction_type;
 
     private int category_id_selected;
+    private List<CategoriesModel> availableCategories;
 
     static final String[] RECURRENCE_TYPES = {"none", "days","weeks","months"};
 
@@ -64,6 +64,9 @@ public class AddTransactionActivity extends AppCompatActivity {
             transaction_type = "Transaction";
         }
         category_id_selected=-1;
+
+        CategoriesHandler ch = new CategoriesHandler(AddTransactionActivity.this);
+        availableCategories =  ch.getAllCategories(transaction_type);
 
         //Retrieve objects
         fetchEditText();
@@ -125,6 +128,8 @@ public class AddTransactionActivity extends AppCompatActivity {
     }
 
     protected void setUpCategory(){
+
+        // Setup the dialog for choosing the category
         et_category.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -265,10 +270,11 @@ public class AddTransactionActivity extends AppCompatActivity {
 
     protected boolean validateFields(){
         // Category, date and value must have a value!
+        // The check is repeated because of the compiler optimization
+
         checkNotEmpty(et_category);
         checkNotEmpty(et_start_date);
         checkNotEmpty(et_value);
-
 
         return checkNotEmpty(et_category) && checkNotEmpty(et_value) && checkNotEmpty(et_start_date) && category_id_selected!=-1;
     }
@@ -295,7 +301,7 @@ public class AddTransactionActivity extends AppCompatActivity {
         String category = et_category.getText().toString();
         String date = et_start_date.getText().toString();
         // Transform date to compatible format
-        date = this.transformDate(date);
+        date = this.transformDateFromFieldsToDatabase(date);
 
 
         String recurrence_type = et_recurrence_type.getSelectedItem().toString();
@@ -320,39 +326,42 @@ public class AddTransactionActivity extends AppCompatActivity {
         return transaction_model;
     }
 
-    protected void putModelOnFields(@NonNull TransactionModel transaction_model){
-        et_category.setText(transaction_model.getCategory());
-        et_start_date.setText(transaction_model.getInitial_date());
-        et_value.setText(String.valueOf(transaction_model.getValue()));
-        et_recurrence_value.setText(String.valueOf(transaction_model.getRecurrence_value()));
 
-
-        et_recurrence_type.setSelection(((ArrayAdapter)et_recurrence_type.getAdapter()).getPosition(transaction_model.getRecurrence_category()));
-
-    }
-
+    @RequiresApi(api = Build.VERSION_CODES.O)
     protected void putModelOnFields(int transaction_model_id){
-
 
         TransactionHandler db_helper = new TransactionHandler(this);
         TransactionModel transaction_model = db_helper.getTransaction(transaction_model_id);
 
-        //
+        // Return in case the model is null
         if (transaction_model == null){return;}
 
+        // Update the type we are dealing with
+        transaction_type = transaction_model.getType();
+        CategoriesHandler ch = new CategoriesHandler(AddTransactionActivity.this);
+        availableCategories =  ch.getAllCategories(transaction_type);
 
+        List<String> arr= new ArrayList<String>();
+        for (CategoriesModel cm : availableCategories){
+            arr.add(cm.getName());
+        }
+
+        //Set the text
         et_category.setText(transaction_model.getCategory());
-        et_start_date.setText(transaction_model.getInitial_date());
+
+        // Set category id
+        this.category_id_selected=arr.indexOf(transaction_model.getCategory());
+
+        et_start_date.setText(this.transformDateFromDatabaseToFields(transaction_model.getInitial_date()));
         et_value.setText(String.valueOf(transaction_model.getValue()));
         et_recurrence_value.setText(String.valueOf(transaction_model.getRecurrence_value()));
 
 
         et_recurrence_type.setSelection(((ArrayAdapter)et_recurrence_type.getAdapter()).getPosition(transaction_model.getRecurrence_category()));
-
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    protected String transformDate(String date){
+    protected String transformDateFromFieldsToDatabase(String date){
         final String OLD_FORMAT = "MM/dd/yy";
         final String NEW_FORMAT = "yyyy-MM-dd";
 
@@ -360,5 +369,17 @@ public class AddTransactionActivity extends AppCompatActivity {
         String newstring = datetime.format(DateTimeFormatter.ofPattern(NEW_FORMAT));
 
         return newstring;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.O)
+    protected String transformDateFromDatabaseToFields(String date){
+        final String NEW_FORMAT = "MM/dd/yy";
+        final String OLD_FORMAT = "yyyy-MM-dd";
+
+        LocalDate datetime = LocalDate.parse(date, DateTimeFormatter.ofPattern(OLD_FORMAT));
+        String newstring = datetime.format(DateTimeFormatter.ofPattern(NEW_FORMAT));
+
+        return newstring;
+
     }
 }

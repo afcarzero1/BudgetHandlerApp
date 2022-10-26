@@ -5,17 +5,29 @@ import com.example.myapplication.datahandlers.TransactionHandler;
 import com.example.myapplication.datahandlers.TransactionModel;
 
 import android.app.Activity;
+import android.os.Build;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.Toast;
+
+import androidx.annotation.RequiresApi;
 
 public class EditTransactionActivity extends AddTransactionActivity {
 
     int transaction_id;
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(transaction_type==null){
+
+
+
+
+        }
+
 
 
         // Change button from add to delete
@@ -28,6 +40,7 @@ public class EditTransactionActivity extends AddTransactionActivity {
         putModelOnFields(transaction_id);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void addTransaction(){
         // Update the item
@@ -51,9 +64,5 @@ public class EditTransactionActivity extends AddTransactionActivity {
         // Finish the activity
         finish();
     }
-
-
-
-
 
 }
