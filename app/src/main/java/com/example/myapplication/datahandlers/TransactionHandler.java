@@ -62,7 +62,6 @@ public class TransactionHandler extends SQLiteOpenHelper {
 
     }
 
-
     public boolean addTransaction(TransactionModel transaction_model){
 
         SQLiteDatabase db = this.getWritableDatabase();
@@ -167,7 +166,7 @@ public class TransactionHandler extends SQLiteOpenHelper {
                 " WHERE " + TYPE +"='"+ type+ "'"+ " AND "+
                 "strftime('%m',"+INITIAL_DATE+")= '"+String.format(Locale.ENGLISH,"%02d", month)+"'"+ " AND "+
                 "strftime('%Y',"+INITIAL_DATE+")= '"+String.format(Locale.ENGLISH,"%04d", year)+"'"+
-                " GROUP BY " + column;
+                " GROUP BY " + column + " ORDER BY " + "SUM("+VALUE+")";
 
 
         Cursor cursor  = db.rawQuery(query,null);

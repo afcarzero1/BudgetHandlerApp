@@ -4,40 +4,66 @@ import androidx.activity.result.ActivityResult;
 import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
 import com.example.myapplication.common_functionality.HideItemsInterface;
 import com.example.myapplication.datahandlers.CategoriesHandler;
+import com.example.myapplication.datahandlers.CategoriesModel;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.example.myapplication.datahandlers.TransactionModel;
 import com.example.myapplication.datahandlers.RecyclerTransactionAdapter;
+import com.example.myapplication.inter.AddCategoryActivity;
 import com.example.myapplication.inter.AddTransactionActivity;
 import com.example.myapplication.inter.CategoriesActivity;
+import com.example.myapplication.inter.recyclerCategoriesAdapter;
 import com.example.myapplication.mainfragments.MainFragmentAdapter;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity implements HideItemsInterface {
 
-    private ActivityResultLauncher<Intent> launcher;
+    private ActivityResultLauncher<Intent> launcher_transaction;
+    private ActivityResultLauncher<Intent> launcher_categories;
 
     private TabLayout tabLayout;
     private ViewPager2 viewPager2;
     MainFragmentAdapter mainFragmentAdapter;
 
+
+    public enum Tabs {
+        HOME(0),
+        TRANSACTIONS(1),
+        CATEGORIES(2);
+
+        private final int value;
+
+        Tabs(int value) {
+            this.value = value;
+        }
+
+        @RequiresApi(api = Build.VERSION_CODES.N)
+        public static Optional<Tabs> valueOf(int value) {
+            return Arrays.stream(values())
+                    .filter(tab -> tab.value == value)
+                    .findFirst();
+        }
+
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -127,14 +153,12 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         configureViewPager();
     }
 
-
-
     protected void configureButtons(){
         FloatingActionButton btn_category = (FloatingActionButton) findViewById(R.id.handle_categories_button);
         FloatingActionButton btn_expense = (FloatingActionButton) findViewById(R.id.add_expense_floating_button);
         FloatingActionButton btn_income = (FloatingActionButton) findViewById(R.id.add_income_floating_button);
 
-        launcher = registerForActivityResult(
+        launcher_transaction = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
 
@@ -149,9 +173,29 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
                 }
         );
 
+        launcher_categories = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        // Handle the returned Uri
+                        if (result.getResultCode() == Activity.RESULT_OK){
+                            // Update the view
+                            updateCategoriesView();
+                        }
+                    }
+                }
+        );
+
         btn_expense.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                if (tabLayout.getSelectedTabPosition() == 2){
+                    launchAddCategory();
+                    return;
+                }
+
                 MainActivity.this.launchAddTransaction(view);
             }
         });
@@ -212,7 +256,12 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
 
+                // Move the tab layout
                 tabLayout.getTabAt(position).select();
+
+
+                //Change buttons if necessary
+
             }
         });
 
@@ -230,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
                 intent.putExtra("type",CategoriesHandler.TYPE_INCOME);
             }
             // Launch the activity
-            launcher.launch(intent);
+            launcher_transaction.launch(intent);
         }catch (Exception e){
             Log.d("exception",e.toString());
         }
@@ -239,26 +288,10 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
     }
 
-/*    protected void runPythonAnalysis(){
-        // Start Python
-        if (! Python.isStarted()) {
-            Python.start(new AndroidPlatform(this));
-        }
-
-
-
-        Python py = Python.getInstance();
-
-        PyObject pyobj = py.getModule("BudgetHandler");
-        PyObject  python_budget_handler = pyobj.callAttr("BudgetHandler");
-
-        // TRy to run some Python code
-        try {
-            python_budget_handler.callAttr("readFile","ExampleTransactions/transactions.csv");
-        }catch (PyException e){
-            Log.d("pyexception","File not read");
-        }
-    }*/
+    public void launchAddCategory(){
+        Intent intent = new Intent(MainActivity.this, AddCategoryActivity.class);
+        launcher_categories.launch(intent);
+    }
 
     protected void updateTransactionView(){
 
@@ -273,10 +306,27 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
     }
 
+    protected void updateCategoriesView(){
+        // Access the database
+        CategoriesHandler ch = new CategoriesHandler(MainActivity.this);
+
+        // Get all the categories
+        List<CategoriesModel> categories = ch.getAllCategories();
+
+        this.setCategoriesAdapter(categories);
+
+    }
+
     protected void setTransactionAdapter(List<TransactionModel> transactions){
 
         RecyclerView rv=findViewById(R.id.all_transaction_recycler_view);
         RecyclerTransactionAdapter adapter = new RecyclerTransactionAdapter(new ArrayList<TransactionModel>(transactions));
+        rv.setAdapter(adapter);
+    }
+
+    protected void setCategoriesAdapter(List<CategoriesModel> categories){
+        RecyclerView rv = findViewById(R.id.recycler_view_categories);
+        recyclerCategoriesAdapter adapter = new recyclerCategoriesAdapter(new ArrayList<CategoriesModel>(categories));
         rv.setAdapter(adapter);
     }
 

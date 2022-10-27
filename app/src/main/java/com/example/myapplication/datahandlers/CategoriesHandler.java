@@ -70,7 +70,7 @@ public class CategoriesHandler extends SQLiteOpenHelper {
 
     public List<CategoriesModel> getAllCategories(){
         List<CategoriesModel> returnList = new ArrayList<>();
-        String query = "SELECT * FROM " + CATEGORIES_TABLE;
+        String query = "SELECT * FROM " + CATEGORIES_TABLE + " ORDER BY " + TYPE;
         SQLiteDatabase db = this.getReadableDatabase();
 
         Cursor cursor  = db.rawQuery(query,null);

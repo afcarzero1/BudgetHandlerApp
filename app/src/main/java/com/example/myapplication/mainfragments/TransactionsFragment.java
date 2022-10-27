@@ -88,20 +88,18 @@ public class TransactionsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Retrieve data from database
-        this.dataInitialize();
-
         // Find the recycler view
         this.transactionListRecyclerView = view.findViewById(R.id.all_transaction_recycler_view);
         //transactionListRecyclerView.setHasFixedSize(true);
 
-        //
-        this.setTransactionAdapter(this.transactions);
+        // Add data to the recycler view
+        this.updateTransactionView();
+        // Configure functionality of the recycler view
         this.configureRecyclerView();
     }
 
     protected void updateTransactionView(){
-        dataInitialize();
+        this.dataInitialize();
         this.setTransactionAdapter(this.transactions);
     }
 
