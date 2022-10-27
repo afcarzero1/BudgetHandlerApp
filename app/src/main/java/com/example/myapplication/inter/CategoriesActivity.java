@@ -29,6 +29,7 @@ import com.example.myapplication.datahandlers.TransactionHandler;
 import com.github.dewinjm.monthyearpicker.MonthYearPickerDialog;
 import com.github.dewinjm.monthyearpicker.MonthYearPickerDialogFragment;
 import com.github.mikephil.charting.charts.BarChart;
+import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.BarData;
@@ -51,7 +52,7 @@ import java.util.Map;
 public class CategoriesActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> launcher;
-    private BarChart categories_bar_chart;
+    private HorizontalBarChart categories_bar_chart;
     private TextView et_type;
     private TextView et_date;
 
@@ -68,7 +69,7 @@ public class CategoriesActivity extends AppCompatActivity {
         //new MonthYearPickerDialog().show(getSupportFragmentManager(),"about");
 
         // Find the graph
-        this.categories_bar_chart = (BarChart) findViewById(R.id.categories_bar_chart);
+        this.categories_bar_chart = (HorizontalBarChart) findViewById(R.id.categories_bar_chart);
 
 
         //Get date from user as soon as entered
@@ -226,8 +227,6 @@ public class CategoriesActivity extends AppCompatActivity {
         this.categories_bar_chart.invalidate();
     }
 
-
-
     protected void plotValues2(Map<String,Float> to_plot){
 
         // Build the entries
@@ -265,6 +264,7 @@ public class CategoriesActivity extends AppCompatActivity {
         for (Map.Entry<String,Float> entry : to_plot.entrySet()){
             if(maxValue < entry.getValue()){maxValue=entry.getValue();}
         }
+
 
 
         YAxis rightAxis = this.categories_bar_chart.getAxisRight();
