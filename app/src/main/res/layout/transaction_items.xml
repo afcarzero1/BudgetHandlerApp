@@ -7,9 +7,10 @@
    android:orientation="horizontal">
 
     <ImageView
-        android:layout_width="wrap_content"
+        android:id="@+id/transaction_icon_image"
+        android:layout_width="50dp"
         android:layout_height="match_parent"
-        android:src="@drawable/iconexpense"/>
+        android:src="@drawable/expense_icon" />
 
     <LinearLayout
         android:layout_width="0dp"

@@ -1,18 +1,25 @@
 package com.example.myapplication.datahandlers;
 
 
+import android.content.Context;
+import android.graphics.drawable.Drawable;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
 
 import java.util.ArrayList;
 
+
+//<a href="https://iconscout.com/icons/expenses" target="_blank">Expenses Icon</a> by <a href="https://iconscout.com/contributors/surang">Surangkana Jomjunyong</a> on <a href="https://iconscout.com">IconScout</a>
 public class RecyclerTransactionAdapter extends RecyclerView.Adapter<RecyclerTransactionAdapter.MyViewHolder> {
     private ArrayList<TransactionModel> transactionList;
 
@@ -33,7 +40,11 @@ public class RecyclerTransactionAdapter extends RecyclerView.Adapter<RecyclerTra
         final private TextView type;
         final private TextView date;
         final private TextView value;
+        final private ImageView transaction_icon;
         private int id;
+
+        final private Context context;
+
 
         public MyViewHolder(final View view ){
             super(view);
@@ -41,7 +52,10 @@ public class RecyclerTransactionAdapter extends RecyclerView.Adapter<RecyclerTra
             date = view.findViewById(R.id.date_text);
             type = view.findViewById(R.id.type_text);
             value = view.findViewById(R.id.value_text);
+            transaction_icon= view.findViewById(R.id.transaction_icon_image);
+            //Set icon depending on the type
             id=-1;
+            context=view.getContext();
         }
     }
 
@@ -68,6 +82,14 @@ public class RecyclerTransactionAdapter extends RecyclerView.Adapter<RecyclerTra
         holder.value.setText(value);
         holder.id= transactionList.get(position).getId();
 
+        Drawable expense_icon = ContextCompat.getDrawable(holder.context,R.drawable.expense_icon);
+
+        if(type.equals(CategoriesHandler.TYPE_EXPENSE)){
+            holder.transaction_icon.setImageDrawable(expense_icon);
+        }else if(type.equals(CategoriesHandler.TYPE_INCOME)){
+            expense_icon = ContextCompat.getDrawable(holder.context,R.drawable.income_icon);
+            holder.transaction_icon.setImageDrawable(expense_icon);
+        }
     }
 
     @Override
