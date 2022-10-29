@@ -11,7 +11,6 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
@@ -71,7 +70,7 @@ public class RecyclerTransactionAdapter extends RecyclerView.Adapter<RecyclerTra
     public void onBindViewHolder(@NonNull RecyclerTransactionAdapter.MyViewHolder holder, int position) {
         // Here we bind the data to the view
         String category = transactionList.get(position).getCategory();
-        String date = transactionList.get(position).getInitial_date();
+        String date = transactionList.get(position).getInitialDate();
         String type = transactionList.get(position).getType();
         String value = transactionList.get(position).getValue().toString();
 
@@ -84,9 +83,9 @@ public class RecyclerTransactionAdapter extends RecyclerView.Adapter<RecyclerTra
 
         Drawable expense_icon = ContextCompat.getDrawable(holder.context,R.drawable.expense_icon);
 
-        if(type.equals(CategoriesHandler.TYPE_EXPENSE)){
+        if(type.equals(TransactionHandler.TYPE_EXPENSE)){
             holder.transaction_icon.setImageDrawable(expense_icon);
-        }else if(type.equals(CategoriesHandler.TYPE_INCOME)){
+        }else if(type.equals(TransactionHandler.TYPE_INCOME)){
             expense_icon = ContextCompat.getDrawable(holder.context,R.drawable.income_icon);
             holder.transaction_icon.setImageDrawable(expense_icon);
         }

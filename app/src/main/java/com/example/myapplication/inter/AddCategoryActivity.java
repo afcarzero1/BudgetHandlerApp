@@ -2,8 +2,8 @@ package com.example.myapplication.inter;
 
 
 import com.example.myapplication.R;
-import com.example.myapplication.datahandlers.CategoriesHandler;
-import com.example.myapplication.datahandlers.CategoriesModel;
+import com.example.myapplication.datahandlers.TransactionHandler;
+import com.example.myapplication.datahandlers.models.CategoriesModel;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -29,11 +29,10 @@ public class AddCategoryActivity extends Activity {
     }
 
     protected void configureButton(){
-
     Button btn = (Button) findViewById(R.id.confirm_add_cattegory_button);
 
     btn.setOnClickListener(new View.OnClickListener()
-    {
+        {
             /**
              * Called when the add button is pressed. Checks validity of data and adds it to the database.
              * @param v The button that called it
@@ -43,10 +42,7 @@ public class AddCategoryActivity extends Activity {
             {
                 addCategory();
             }
-    });
-
-
-
+        });
     }
 
     protected void addCategory(){
@@ -58,12 +54,11 @@ public class AddCategoryActivity extends Activity {
 
         // Proceed to adding it
         CategoriesModel cm;
-        CategoriesHandler ch = new CategoriesHandler(AddCategoryActivity.this);
-
+        TransactionHandler th = new TransactionHandler(AddCategoryActivity.this);
 
         try {
             cm = retrieveDataFromFields();
-            ch.addCategory(cm);
+            th.addCategory(cm);
             Toast.makeText(AddCategoryActivity.this,"Category added", Toast.LENGTH_SHORT).show();
             setResult(Activity.RESULT_OK);
             finish();
@@ -81,7 +76,8 @@ public class AddCategoryActivity extends Activity {
     }
 
     protected CategoriesModel retrieveDataFromFields(){
-        return new CategoriesModel(-1, this.et_category_name.getText().toString(),tb_type.getText().toString());
+        //todo : add here support for parent class
+        return new CategoriesModel(this.et_category_name.getText().toString(),tb_type.getText().toString(),"base","expense");
     }
 
 

@@ -17,8 +17,9 @@ import android.util.Log;
 import android.view.View;
 
 import com.example.myapplication.common_functionality.HideItemsInterface;
-import com.example.myapplication.datahandlers.CategoriesHandler;
-import com.example.myapplication.datahandlers.CategoriesModel;
+import com.example.myapplication.datahandlers.models.AccountModel;
+import com.example.myapplication.datahandlers.models.CategoriesModel;
+import com.example.myapplication.datahandlers.models.CurrencyModel;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.example.myapplication.datahandlers.TransactionModel;
 import com.example.myapplication.datahandlers.RecyclerTransactionAdapter;
@@ -72,79 +73,17 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         setContentView(R.layout.activity_main);
         setTitle("Budget Handler");
 
-/*        // Find the Recycler view and setup method to be called when item is pressed
-        transaction_list = (RecyclerView) findViewById(R.id.transaction_recycler_view);
+        TransactionHandler th = new TransactionHandler(this);
+        th.addCurrency(new CurrencyModel("eur"));
+        th.addAccount(new AccountModel("test","eur",(float)0));
 
-        // Add action when an item in the list is pressed. Open a window and allow to delete or edit it.
-        // On short click it opens window to edit the transaction. On long click opens window to delete it.
-        transaction_list.addOnItemTouchListener(
-                new RecyclerItemClickListener(this, transaction_list ,new RecyclerItemClickListener.OnItemClickListener() {
-                    @Override public void onItemClick(View view, int position) {
-                        // Open a information window about the transaction pressed by user.
-                        recyclerTransactionAdapter ra = (recyclerTransactionAdapter) transaction_list.getAdapter();
-                        if (ra != null) {
-                            TransactionModel model = ra.getItem(position);
-                            if (model != null){
-                                // Open edit activity
+        // Add root category
+        th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_EXPENSE,null,null));
+        th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_INCOME,null,null));
 
-                                Toast.makeText(MainActivity.this,"Pressed",Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(MainActivity.this, EditTransactionActivity.class);
-                                // Put the id
-                                intent.putExtra("id",model.getId());
-                                launcher.launch(intent);
-                            }
-                        }
+        List<CategoriesModel> l = th.getAllCategories(true);
 
-
-                    }
-
-                    @Override public void onLongItemClick(View view, int position) {
-                        // Get the item id
-                        recyclerTransactionAdapter ra = (recyclerTransactionAdapter) transaction_list.getAdapter();
-                        if (ra != null) {
-                            TransactionModel model = ra.getItem(position);
-                            final int transaction_id=model.getId();
-                            // When long click is pressed delete the transaction
-                            new AlertDialog.Builder(MainActivity.this)
-                                    .setIcon(android.R.drawable.ic_dialog_alert)
-                                    .setTitle("Deleting Transaction")
-                                    .setMessage("Are you sure you want to delete this transaction?")
-                                    .setPositiveButton("Yes", new DialogInterface.OnClickListener()
-                                    {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-
-                                            TransactionHandler db_helper = new TransactionHandler(MainActivity.this);
-                                            final boolean success = db_helper.deleteTransaction(transaction_id);
-                                            if(success){
-                                                Toast.makeText(MainActivity.this,"Successfully deleted",Toast.LENGTH_SHORT).show();
-                                            }
-                                            updateTransactionView();
-                                        }
-                                    })
-                                    .setNegativeButton("No", null)
-                                    .show();
-                        }
-
-                    }
-                })
-        );
-
-        // Define launcher for coming back from activities that modify database of transactions and update the view shown in the
-        launcher = registerForActivityResult(
-                new ActivityResultContracts.StartActivityForResult(),
-                new ActivityResultCallback<ActivityResult>() {
-
-                    @Override
-                    public void onActivityResult(ActivityResult result) {
-                        // Handle the returned Uri
-                        if (result.getResultCode() == Activity.RESULT_OK){
-                            // Update the view
-                            updateTransactionView();
-                        }
-                    }
-                }
-        );*/
+        th.addCategory(new CategoriesModel("rent",TransactionHandler.TYPE_EXPENSE,"base",TransactionHandler.TYPE_EXPENSE));
 
         // Configure buttons
         this.configureButtons();
@@ -274,9 +213,9 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         try {
             Intent intent = new Intent(this, AddTransactionActivity.class);
             if(view.getId() == R.id.add_expense_floating_button){
-                intent.putExtra("type", CategoriesHandler.TYPE_EXPENSE);
+                intent.putExtra("type", TransactionHandler.TYPE_EXPENSE);
             }else if (view.getId() == R.id.add_income_floating_button){
-                intent.putExtra("type",CategoriesHandler.TYPE_INCOME);
+                intent.putExtra("type",TransactionHandler.TYPE_INCOME);
             }
             // Launch the activity
             launcher_transaction.launch(intent);
@@ -307,11 +246,8 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
     }
 
     protected void updateCategoriesView(){
-        // Access the database
-        CategoriesHandler ch = new CategoriesHandler(MainActivity.this);
 
-        // Get all the categories
-        List<CategoriesModel> categories = ch.getAllCategories();
+        List<CategoriesModel> categories = new TransactionHandler(MainActivity.this).getAllCategories(true);
 
         this.setCategoriesAdapter(categories);
 

@@ -1,16 +1,9 @@
 package com.example.myapplication.inter;
 
-import androidx.activity.result.ActivityResult;
-import androidx.activity.result.ActivityResultCallback;
 import androidx.activity.result.ActivityResultLauncher;
-import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DefaultItemAnimator;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -19,16 +12,13 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.myapplication.R;
-import com.example.myapplication.RecyclerItemClickListener;
-import com.example.myapplication.datahandlers.CategoriesHandler;
-import com.example.myapplication.datahandlers.CategoriesModel;
+import com.example.myapplication.datahandlers.TransactionModel;
+import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.github.dewinjm.monthyearpicker.MonthYearPickerDialog;
 import com.github.dewinjm.monthyearpicker.MonthYearPickerDialogFragment;
-import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.HorizontalBarChart;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -37,8 +27,6 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.ValueFormatter;
 
-
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -89,24 +77,19 @@ public class CategoriesActivity extends AppCompatActivity {
     }
 
     protected void updateGraph(){
-
         // Access the database
-        CategoriesHandler ch = new CategoriesHandler(CategoriesActivity.this);
+        TransactionHandler ch = new TransactionHandler(CategoriesActivity.this);
 
         // Get the current date
         int currentYear = this.yearToShow;
         int currentMonth = this.monthToShow;
 
-        // Expenses of past months
-        TransactionHandler th = new TransactionHandler(CategoriesActivity.this);
+        String typeToRetrieve=String.valueOf(et_type.getText());
 
-
-        String type_to_retrieve=String.valueOf(et_type.getText());
-        Map<String,Float> categories_to_expense = ch.getAllCategoriesSum(th, type_to_retrieve, currentYear, currentMonth);
-
+        Map<String,Float> categories_to_expense = ch.groupTransactionsBy(typeToRetrieve, TransactionModel.FIELDS.CATEGORY.getSqlName() ,currentYear, currentMonth);
 
         // Add categories that do not appear (todo : solve this uing left outer join )
-        List<CategoriesModel> categories=ch.getAllCategories(type_to_retrieve);
+        List<CategoriesModel> categories=ch.getAllCategories(typeToRetrieve);
 
         if (categories.isEmpty()){
             return;
@@ -120,111 +103,6 @@ public class CategoriesActivity extends AppCompatActivity {
         }
 
         this.plotValues2(categories_to_expense);
-    }
-
-    protected void plotValues(Map<String,Float> to_plot){
-
-        ArrayList<Float> valuesList = new ArrayList<Float>();
-        final ArrayList<String> xAxisLabel = new ArrayList<>();
-
-        ArrayList<BarEntry> entries = new ArrayList<>();
-        int i=0;
-        float maxValue = 0;
-        for (Map.Entry<String,Float> entry : to_plot.entrySet()){
-            // For every entry add the label and the value
-            xAxisLabel.add(entry.getKey());
-            valuesList.add(entry.getValue());
-
-            if(entry.getValue() > maxValue){
-                maxValue = entry.getValue();}
-
-            BarEntry barEntry = new BarEntry(i+1, entry.getValue());
-            entries.add(barEntry);
-            i++;
-        }
-        xAxisLabel.add(""); //empty label for the last vertical grid line on Y-Right Axis
-
-
-        // Get xaxis of the bar graph and do manipulations
-        XAxis xAxis = this.categories_bar_chart.getXAxis();
-        xAxis.enableGridDashedLine(10f, 10f, 0f);
-        xAxis.setTextColor(Color.BLACK);
-        xAxis.setTextSize(12);
-        xAxis.setDrawAxisLine(true);
-        xAxis.setAxisLineColor(Color.BLACK);
-        xAxis.setDrawGridLines(true);
-        //xAxis.setGranularity(1f);
-        //xAxis.setGranularityEnabled(true);
-        xAxis.setAxisMinimum(0 + 0.5f); //to center the bars inside the vertical grid lines we need + 0.5 step
-        xAxis.setAxisMaximum(entries.size() + 0.5f); //to center the bars inside the vertical grid lines we need + 0.5 step
-        xAxis.setLabelCount(xAxisLabel.size(), true); //draw x labels for 13 vertical grid lines
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setXOffset(0f); //labels x offset in dps
-        xAxis.setYOffset(0f); //labels y offset in dps
-        xAxis.setCenterAxisLabels(true);
-        xAxis.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                int index = (int) value;
-                return xAxisLabel.get((int) value);
-            }
-        });
-
-        //initialize Y-Right-Axis
-        YAxis rightAxis = this.categories_bar_chart.getAxisRight();
-        rightAxis.setTextColor(Color.BLACK);
-        rightAxis.setTextSize(14);
-        rightAxis.setDrawAxisLine(true);
-        rightAxis.setAxisLineColor(Color.BLACK);
-        rightAxis.setDrawGridLines(true);
-        rightAxis.setGranularity(1f);
-        rightAxis.setGranularityEnabled(true);
-        rightAxis.setAxisMinimum(0);
-        rightAxis.setAxisMaximum(maxValue+2f);
-        rightAxis.setLabelCount(4, true); //draw y labels (Y-Values) for 4 horizontal grid lines starting from 0 to 6000f (step=2000)
-        rightAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
-
-
-        //initialize Y-Left-Axis
-        YAxis leftAxis = this.categories_bar_chart.getAxisLeft();
-        leftAxis.setAxisMinimum(0);
-        leftAxis.setDrawAxisLine(true);
-        leftAxis.setLabelCount(0, true);
-        leftAxis.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                return "";
-            }
-        });
-
-        //set the BarDataSet
-        BarDataSet barDataSet = new BarDataSet(entries, "Categories");
-        barDataSet.setColor(Color.BLUE);
-        barDataSet.setFormSize(15f);
-        barDataSet.setDrawValues(true);
-        barDataSet.setValueTextSize(12f);
-
-
-        //set the BarData to chart
-        BarData data = new BarData(barDataSet);
-
-
-        if( categories_bar_chart.getData() != null){
-            this.categories_bar_chart.getData().clearValues();
-            this.categories_bar_chart.invalidate();
-            this.categories_bar_chart.setData(data);
-        }else{
-            this.categories_bar_chart.setData(data);
-        }
-
-        this.categories_bar_chart.setScaleEnabled(false);
-        this.categories_bar_chart.getLegend().setEnabled(false);
-        this.categories_bar_chart.setDrawBarShadow(false);
-        this.categories_bar_chart.getDescription().setEnabled(false);
-        this.categories_bar_chart.setPinchZoom(false);
-        this.categories_bar_chart.setDrawGridBackground(true);
-        this.categories_bar_chart.notifyDataSetChanged();
-        this.categories_bar_chart.invalidate();
     }
 
     protected void plotValues2(Map<String,Float> to_plot){
@@ -253,9 +131,6 @@ public class CategoriesActivity extends AppCompatActivity {
         // Plot it by notifying change and re-drawing
         categories_bar_chart.notifyDataSetChanged();
         categories_bar_chart.invalidate();
-
-
-
     }
 
     protected void configureYAxis(Map<String,Float> to_plot){
@@ -338,9 +213,6 @@ public class CategoriesActivity extends AppCompatActivity {
                 return xAxisLabel.get(index2);
             }
         });
-
-
-
     }
 
     protected BarDataSet buildDataset(ArrayList<BarEntry> entries){
@@ -392,7 +264,7 @@ public class CategoriesActivity extends AppCompatActivity {
         this.et_type = (TextView) findViewById(R.id.type);
 
         // Set default type
-        this.et_type.setText(CategoriesHandler.TYPE_EXPENSE);
+        this.et_type.setText(TransactionHandler.TYPE_EXPENSE);
 
         // Set the listener for when the text is clicked
         this.et_type.setOnClickListener(
@@ -404,8 +276,8 @@ public class CategoriesActivity extends AppCompatActivity {
                         builder.setTitle("Choose...");
 
                         // Setup the adapter
-                        String [] arr = new String[]{CategoriesHandler.TYPE_EXPENSE,CategoriesHandler.TYPE_INCOME};
-                        final ArrayAdapter<String> array_adapter = new ArrayAdapter<String>(CategoriesActivity.this, android.R.layout.select_dialog_item,arr);
+                        String [] arr = new String[]{TransactionHandler.TYPE_EXPENSE,TransactionHandler.TYPE_INCOME};
+                        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(CategoriesActivity.this, android.R.layout.select_dialog_item,arr);
 
                         // Setup buttons behaviour
                         builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
@@ -415,14 +287,15 @@ public class CategoriesActivity extends AppCompatActivity {
                             }
                         });
 
-                        builder.setAdapter(array_adapter, new DialogInterface.OnClickListener() {
+                        builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
-                                String strName = array_adapter.getItem(which);
+                                String strName = arrayAdapter.getItem(which);
                                 et_type.setText(strName);
                                 updateGraph();
                             }
                         });
+
                         builder.show();
                     }
                 }
@@ -461,5 +334,5 @@ public class CategoriesActivity extends AppCompatActivity {
         dialogFragment.show(getSupportFragmentManager(), null);
 
         Log.d("DATE_PICKER",String.valueOf(yearSelected)+'/'+String.valueOf(monthSelected));
-}
+    }
 }

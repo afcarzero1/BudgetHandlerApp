@@ -1,6 +1,5 @@
 package com.example.myapplication.inter;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,8 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.myapplication.R;
-import com.example.myapplication.datahandlers.CategoriesHandler;
-import com.example.myapplication.datahandlers.CategoriesModel;
+import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.example.myapplication.datahandlers.TransactionModel;
 
@@ -65,7 +63,7 @@ public class AddTransactionActivity extends AppCompatActivity {
         }
         category_id_selected=-1;
 
-        CategoriesHandler ch = new CategoriesHandler(AddTransactionActivity.this);
+        TransactionHandler ch = new TransactionHandler(AddTransactionActivity.this);
         availableCategories =  ch.getAllCategories(transaction_type);
 
         //Retrieve objects
@@ -142,7 +140,7 @@ public class AddTransactionActivity extends AppCompatActivity {
                         builder.setTitle("Choose...");
 
                         //todo : transfor into a recycler adapter for handling icon
-                        CategoriesHandler ch = new CategoriesHandler(AddTransactionActivity.this);
+                        TransactionHandler ch = new TransactionHandler(AddTransactionActivity.this);
                         List<CategoriesModel> categories = ch.getAllCategories(transaction_type);
                         String [] arr= new String[categories.size()];
                         int i=0;
@@ -169,7 +167,6 @@ public class AddTransactionActivity extends AppCompatActivity {
                                 String strName = array_adapter.getItem(which);
 
                                 // This is the category selected
-                                final int category_id=categories.get(which).getId();
                                 AddTransactionActivity.this.category_id_selected=which;
                                 et_category.setText(strName);
                             }
@@ -321,7 +318,7 @@ public class AddTransactionActivity extends AppCompatActivity {
             value = Float.parseFloat(et_value.getText().toString());
         }
         // id used here is not real
-        transaction_model = new TransactionModel(0,transaction_type,category,date,recurrence_type,recurrence_value,value);
+        transaction_model = new TransactionModel(0,transaction_type,category,"",date,recurrence_type,recurrence_value,value);
 
         return transaction_model;
     }
@@ -338,7 +335,7 @@ public class AddTransactionActivity extends AppCompatActivity {
 
         // Update the type we are dealing with
         transaction_type = transaction_model.getType();
-        CategoriesHandler ch = new CategoriesHandler(AddTransactionActivity.this);
+        TransactionHandler ch = new TransactionHandler(AddTransactionActivity.this);
         availableCategories =  ch.getAllCategories(transaction_type);
 
         List<String> arr= new ArrayList<String>();
@@ -352,12 +349,12 @@ public class AddTransactionActivity extends AppCompatActivity {
         // Set category id
         this.category_id_selected=arr.indexOf(transaction_model.getCategory());
 
-        et_start_date.setText(this.transformDateFromDatabaseToFields(transaction_model.getInitial_date()));
+        et_start_date.setText(this.transformDateFromDatabaseToFields(transaction_model.getInitialDate()));
         et_value.setText(String.valueOf(transaction_model.getValue()));
-        et_recurrence_value.setText(String.valueOf(transaction_model.getRecurrence_value()));
+        et_recurrence_value.setText(String.valueOf(transaction_model.getRecurrenceValue()));
 
 
-        et_recurrence_type.setSelection(((ArrayAdapter)et_recurrence_type.getAdapter()).getPosition(transaction_model.getRecurrence_category()));
+        et_recurrence_type.setSelection(((ArrayAdapter)et_recurrence_type.getAdapter()).getPosition(transaction_model.getRecurrenceCategory()));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

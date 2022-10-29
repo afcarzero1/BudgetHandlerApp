@@ -18,8 +18,8 @@ import android.widget.Toast;
 
 import com.example.myapplication.R;
 import com.example.myapplication.RecyclerItemClickListener;
-import com.example.myapplication.datahandlers.CategoriesHandler;
-import com.example.myapplication.datahandlers.CategoriesModel;
+import com.example.myapplication.datahandlers.TransactionHandler;
+import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.inter.recyclerCategoriesAdapter;
 
 import java.util.ArrayList;
@@ -92,7 +92,9 @@ public class CategoriesFragment extends Fragment {
                         recyclerCategoriesAdapter ra = (recyclerCategoriesAdapter) categoriesListRecyclerView.getAdapter();
                         if (ra != null) {
                             CategoriesModel model = ra.getItem(position);
-                            final int category_id=model.getId();
+
+                            final String categoryName = model.getName();
+                            final String categoryType = model.getType();
                             // When long click is pressed delete the transaction
                             new AlertDialog.Builder(getActivity())
                                     .setIcon(android.R.drawable.ic_dialog_alert)
@@ -102,8 +104,8 @@ public class CategoriesFragment extends Fragment {
                                     {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            CategoriesHandler db = new CategoriesHandler(getActivity());
-                                            final boolean success = db.deleteCategory(category_id);
+                                            TransactionHandler db = new TransactionHandler(getActivity());
+                                            final boolean success = db.deleteCategory(categoryName,categoryType);
                                             if(success){
                                                 Toast.makeText(getActivity(),"Successfully deleted",Toast.LENGTH_SHORT).show();
                                             }
@@ -117,9 +119,6 @@ public class CategoriesFragment extends Fragment {
                     }
                 })
         );
-
-
-
     }
 
     protected void updateCategoriesView(){
@@ -133,12 +132,12 @@ public class CategoriesFragment extends Fragment {
         categoriesListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         categoriesListRecyclerView.setItemAnimator(new DefaultItemAnimator());
         categoriesListRecyclerView.setAdapter(adapter);
+
         adapter.notifyDataSetChanged();
     }
 
     protected void dataInitialize(){
-        CategoriesHandler ch = new CategoriesHandler(getActivity());
-        this.categories = ch.getAllCategories();
+        TransactionHandler ch = new TransactionHandler(getActivity());
+        this.categories = ch.getAllCategories(true);
     }
-
 }
