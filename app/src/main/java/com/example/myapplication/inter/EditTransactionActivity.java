@@ -2,7 +2,7 @@ package com.example.myapplication.inter;
 
 import com.example.myapplication.R;
 import com.example.myapplication.datahandlers.TransactionHandler;
-import com.example.myapplication.datahandlers.TransactionModel;
+import com.example.myapplication.datahandlers.models.TransactionModel;
 
 import android.app.Activity;
 import android.os.Build;

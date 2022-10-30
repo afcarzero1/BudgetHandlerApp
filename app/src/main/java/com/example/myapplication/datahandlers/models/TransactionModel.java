@@ -1,9 +1,7 @@
-package com.example.myapplication.datahandlers;
+package com.example.myapplication.datahandlers.models;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-
-import com.example.myapplication.datahandlers.models.InstanceModel;
 
 import java.util.List;
 

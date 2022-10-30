@@ -20,10 +20,12 @@ import com.example.myapplication.datahandlers.models.AccountModel;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.models.CurrencyModel;
 import com.example.myapplication.datahandlers.TransactionHandler;
-import com.example.myapplication.datahandlers.TransactionModel;
+import com.example.myapplication.datahandlers.models.TransactionModel;
+import com.example.myapplication.inter.AddAccountActivity;
 import com.example.myapplication.inter.AddCategoryActivity;
 import com.example.myapplication.inter.AddTransactionActivity;
 import com.example.myapplication.inter.CategoriesActivity;
+import com.example.myapplication.mainfragments.AccountsFragment;
 import com.example.myapplication.mainfragments.CategoriesFragment;
 import com.example.myapplication.mainfragments.MainFragmentAdapter;
 import com.example.myapplication.mainfragments.TransactionsFragment;
@@ -36,18 +38,23 @@ import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity implements HideItemsInterface {
 
-    private ActivityResultLauncher<Intent> launcher_transaction;
-    private ActivityResultLauncher<Intent> launcher_categories;
+    private ActivityResultLauncher<Intent> mTransactionLauncher;
+    private ActivityResultLauncher<Intent> mCategoryLauncher;
+    private ActivityResultLauncher<Intent> mAccountLauncher;
 
     private TabLayout tabLayout;
     private ViewPager2 viewPager2;
     MainFragmentAdapter mainFragmentAdapter;
+    private FloatingActionButton btnCategory;
+    private FloatingActionButton btnExpense;
+    private FloatingActionButton btnIncome;
 
 
     public enum Tabs {
         HOME(0),
         TRANSACTIONS(1),
-        CATEGORIES(2);
+        CATEGORIES(2),
+        ACCOUNTS(3);
 
         private final int value;
 
@@ -56,6 +63,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         }
 
         String getIndex(){return String.valueOf(value);}
+        int getIntIndex(){return value;}
 
         @RequiresApi(api = Build.VERSION_CODES.N)
         public static Optional<Tabs> valueOf(int value) {
@@ -83,21 +91,21 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_EXPENSE,null,null));
         th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_INCOME,null,null));
 
-        List<CategoriesModel> l = th.getAllCategories(true);
+        //List<CategoriesModel> l = th.getAllCategories(true);
 
         // Configure buttons
         this.configureButtons();
 
         //updateTransactionView();
-        configureViewPager();
+        this.configureViewPager();
     }
 
     protected void configureButtons(){
-        FloatingActionButton btn_category = (FloatingActionButton) findViewById(R.id.handle_categories_button);
-        FloatingActionButton btn_expense = (FloatingActionButton) findViewById(R.id.add_expense_floating_button);
-        FloatingActionButton btn_income = (FloatingActionButton) findViewById(R.id.add_income_floating_button);
+        btnCategory = (FloatingActionButton) findViewById(R.id.handle_categories_button);
+        btnExpense = (FloatingActionButton) findViewById(R.id.add_expense_floating_button);
+        btnIncome = (FloatingActionButton) findViewById(R.id.add_income_floating_button);
 
-        launcher_transaction = registerForActivityResult(
+        mTransactionLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
 
@@ -112,7 +120,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
                 }
         );
 
-        launcher_categories = registerForActivityResult(
+        mCategoryLauncher = registerForActivityResult(
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
 
@@ -127,26 +135,48 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
                 }
         );
 
-        btn_expense.setOnClickListener(new View.OnClickListener() {
+        mAccountLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if(result.getResultCode() == Activity.RESULT_OK){
+                            updateAccountView();
+                        }
+
+                    }
+                });
+
+        btnExpense.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onClick(View view) {
-                if (tabLayout.getSelectedTabPosition() == 2){
-                    launchAddCategory();
-                    return;
+                int lvSelectedTab = tabLayout.getSelectedTabPosition();
+
+
+                Optional<Tabs> val = Tabs.valueOf(lvSelectedTab);
+                Tabs v =val.get();
+
+                switch (v){
+                    case ACCOUNTS:
+                        launchAddAccount();
+                        break;
+                    case CATEGORIES:
+                        launchAddCategory();
+                        break;
+                    default:
+                        MainActivity.this.launchAddTransaction(view);
                 }
-
-                MainActivity.this.launchAddTransaction(view);
             }
         });
 
-        btn_income.setOnClickListener(new View.OnClickListener() {
+        btnIncome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 MainActivity.this.launchAddTransaction(view);
             }
         });
 
-        btn_category.setOnClickListener(new View.OnClickListener()
+        btnCategory.setOnClickListener(new View.OnClickListener()
         {
             /**
              * Called when the button is pressed. It launched activity for handling categories
@@ -159,8 +189,6 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
                 startActivity(intent);
             }
         });
-
-
     }
 
     protected void configureViewPager(){
@@ -174,9 +202,11 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
         // Setup the tab layout
         tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onTabSelected(TabLayout.Tab tab) {
                 viewPager2.setCurrentItem(tab.getPosition());
+                changeButtonOnTab(tab.getPosition());
             }
 
             @Override
@@ -191,6 +221,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         });
 
         viewPager2.registerOnPageChangeCallback(new ViewPager2.OnPageChangeCallback() {
+            @RequiresApi(api = Build.VERSION_CODES.N)
             @Override
             public void onPageSelected(int position) {
                 super.onPageSelected(position);
@@ -198,12 +229,32 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
                 // Move the tab layout
                 tabLayout.getTabAt(position).select();
 
-
                 //Change buttons if necessary
+                changeButtonOnTab(position);
 
             }
         });
 
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void changeButtonOnTab(int position){
+        Optional<Tabs> val = Tabs.valueOf(position);
+        Tabs v =val.get();
+
+        switch (v){
+            case TRANSACTIONS:
+                btnExpense.setBackgroundTintList(MainActivity.this.getResources().getColorStateList(R.color.holo_red_dark));
+                break;
+            case CATEGORIES:
+                btnExpense.setBackgroundTintList(MainActivity.this.getResources().getColorStateList(R.color.holo_blue_dark));
+                break;
+            case ACCOUNTS:
+                btnExpense.setBackgroundTintList(MainActivity.this.getResources().getColorStateList(R.color.holo_purple));
+                break;
+            default:
+                btnExpense.setBackgroundTintList(MainActivity.this.getResources().getColorStateList(R.color.holo_red_dark));
+        }
     }
 
     public void launchAddTransaction(View view) {
@@ -218,7 +269,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
                 intent.putExtra("type",TransactionHandler.TYPE_INCOME);
             }
             // Launch the activity
-            launcher_transaction.launch(intent);
+            mTransactionLauncher.launch(intent);
         }catch (Exception e){
             Log.d("exception",e.toString());
         }
@@ -229,7 +280,12 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
     public void launchAddCategory(){
         Intent intent = new Intent(MainActivity.this, AddCategoryActivity.class);
-        launcher_categories.launch(intent);
+        mCategoryLauncher.launch(intent);
+    }
+
+    public void launchAddAccount(){
+        Intent intent = new Intent(MainActivity.this, AddAccountActivity.class);
+        mAccountLauncher.launch(intent);
     }
 
     protected void updateTransactionView(){
@@ -253,19 +309,33 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
     }
 
+    protected void updateAccountView() {
+
+        List<AccountModel> accounts = new TransactionHandler(MainActivity.this).getAllAccounts(true);
+        this.setAccountsAdapater(accounts);
+
+    }
+
+    //todo : refactor this methods using some abstarcts class (?)
     protected void setTransactionAdapter(List<TransactionModel> transactions){
         //todo : implement cleaner way for retireveing the recycler adapter
         TransactionsFragment myFragment = (TransactionsFragment)getSupportFragmentManager().findFragmentByTag("f"+Tabs.TRANSACTIONS.getIndex());
         if(myFragment != null && myFragment.isAdded()){
             myFragment.setTransactionAdapter(transactions);
         }
-
     }
 
     protected void setCategoriesAdapter(List<CategoriesModel> categories){
         CategoriesFragment categoriesFragment = (CategoriesFragment) getSupportFragmentManager().findFragmentByTag("f"+Tabs.CATEGORIES.getIndex());
         if(categoriesFragment != null && categoriesFragment.isAdded()){
             categoriesFragment.setTransactionAdapter(categories);
+        }
+    }
+
+    protected void setAccountsAdapater(List<AccountModel> accounts){
+        AccountsFragment accountsFragment = (AccountsFragment) getSupportFragmentManager().findFragmentByTag("f"+Tabs.ACCOUNTS.getIndex());
+        if(accountsFragment != null && accountsFragment.isAdded()){
+            accountsFragment.setTransactionAdapter(accounts);
         }
     }
 

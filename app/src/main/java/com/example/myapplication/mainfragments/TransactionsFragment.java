@@ -28,7 +28,7 @@ import com.example.myapplication.R;
 import com.example.myapplication.RecyclerItemClickListener;
 import com.example.myapplication.common_functionality.HideItemsInterface;
 import com.example.myapplication.datahandlers.TransactionHandler;
-import com.example.myapplication.datahandlers.TransactionModel;
+import com.example.myapplication.datahandlers.models.TransactionModel;
 import com.example.myapplication.datahandlers.adapters.RecyclerTransactionAdapter;
 import com.example.myapplication.inter.EditTransactionActivity;
 

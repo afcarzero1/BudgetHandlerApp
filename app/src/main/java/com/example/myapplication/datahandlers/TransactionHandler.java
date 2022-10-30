@@ -18,6 +18,7 @@ import com.example.myapplication.datahandlers.models.AccountModel;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.models.CurrencyModel;
 import com.example.myapplication.datahandlers.models.InstanceModel;
+import com.example.myapplication.datahandlers.models.TransactionModel;
 
 
 public class TransactionHandler extends SQLiteOpenHelper {
@@ -183,6 +184,15 @@ public class TransactionHandler extends SQLiteOpenHelper {
         List<TransactionModel> toReturn = getAllFromQuery(query,TransactionModel.class);
 
         return toReturn;
+    }
+
+    public List<TransactionModel> getAllTransactions(String type,int year,int month,boolean ordered){
+        String query = "SELECT * FROM " + TRANSACTIONS +  " WHERE " + TransactionModel.FIELDS.TYPE.getSqlName() +"='"+ type+ "'"+ " AND "+
+                "strftime('%m',"+TransactionModel.FIELDS.INITIAL_DATE.getSqlName()+")= '"+String.format(Locale.ENGLISH,"%02d", month)+"'"+ " AND "+
+                "strftime('%Y',"+TransactionModel.FIELDS.INITIAL_DATE.getSqlName()+")= '"+String.format(Locale.ENGLISH,"%04d", year)+"'";
+
+        if (ordered){query+= " ORDER BY "+TransactionModel.FIELDS.INITIAL_DATE.getSqlName();}
+        return getAllFromQuery(query,TransactionModel.class);
     }
 
     public TransactionModel getTransaction(int transaction_model_id){

@@ -25,6 +25,8 @@ public class MainFragmentAdapter extends FragmentStateAdapter {
                 return new TransactionsFragment();
             case 2:
                 return new CategoriesFragment();
+            case 3:
+                return new AccountsFragment();
             default:
                 // Should never happen
                 return new InitialFragment();
@@ -33,6 +35,6 @@ public class MainFragmentAdapter extends FragmentStateAdapter {
 
     @Override
     public int getItemCount() {
-        return 3;
+        return 4;
     }
 }

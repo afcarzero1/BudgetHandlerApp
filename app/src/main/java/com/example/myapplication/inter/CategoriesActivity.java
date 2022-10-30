@@ -3,6 +3,9 @@ package com.example.myapplication.inter;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DefaultItemAnimator;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,7 +17,8 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.example.myapplication.R;
-import com.example.myapplication.datahandlers.TransactionModel;
+import com.example.myapplication.datahandlers.adapters.RecyclerTransactionAdapter;
+import com.example.myapplication.datahandlers.models.TransactionModel;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.github.dewinjm.monthyearpicker.MonthYearPickerDialog;
@@ -41,6 +45,7 @@ public class CategoriesActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> launcher;
     private HorizontalBarChart categories_bar_chart;
+    private RecyclerView transactionsView;
     private TextView et_type;
     private TextView et_date;
 
@@ -58,16 +63,10 @@ public class CategoriesActivity extends AppCompatActivity {
 
         // Find the graph
         this.categories_bar_chart = (HorizontalBarChart) findViewById(R.id.categories_bar_chart);
-
+        this.transactionsView = (RecyclerView) findViewById(R.id.month_transactions);
 
         //Get date from user as soon as entered
         this.onSelectMonth(null);
-/*        Button button = (Button) findViewById(R.id.button_select_month);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                CategoriesActivity.this.onSelectMonth(v);
-            }
-        });*/
 
         this.configureDateField();
         this.configureTypeField();
@@ -76,7 +75,21 @@ public class CategoriesActivity extends AppCompatActivity {
         this.updateGraph();
     }
 
+
+
+    protected void updateList(){
+        TransactionHandler th = new TransactionHandler(CategoriesActivity.this);
+        List<TransactionModel> transactions= th.getAllTransactions(et_type.getText().toString(),this.yearToShow,this.monthToShow,true);
+
+        RecyclerTransactionAdapter adapter = new RecyclerTransactionAdapter(new ArrayList<TransactionModel>(transactions));
+        this.transactionsView.setLayoutManager(new LinearLayoutManager(CategoriesActivity.this));
+        this.transactionsView.setItemAnimator(new DefaultItemAnimator());
+        this.transactionsView.setAdapter(adapter);
+        adapter.notifyDataSetChanged();
+    }
+
     protected void updateGraph(){
+        updateList();
         // Access the database
         TransactionHandler ch = new TransactionHandler(CategoriesActivity.this);
 

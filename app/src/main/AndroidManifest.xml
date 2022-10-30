@@ -14,9 +14,13 @@
         android:theme="@style/Theme.MyApplication"
         tools:targetApi="31">
         <activity
+            android:name=".inter.AddAccountActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Holo.Dialog"/>
+        <activity
             android:name=".inter.AddCategoryActivity"
-            android:theme="@android:style/Theme.Holo.Dialog"
-            android:exported="false" />
+            android:exported="false"
+            android:theme="@android:style/Theme.Holo.Dialog" />
         <activity
             android:name=".inter.CategoriesActivity"
             android:exported="false" />
@@ -25,9 +29,6 @@
             android:exported="false" />
         <activity
             android:name=".inter.AddTransactionActivity"
-            android:exported="false" />
-        <activity
-            android:name=".inter.SettingsActivity"
             android:exported="false" />
         <activity
             android:name=".MainActivity"

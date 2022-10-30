@@ -48,10 +48,11 @@
 
 
     <com.google.android.material.tabs.TabLayout
+        app:tabTextAppearance="@style/CustomTabText"
+        app:tabMode="scrollable"
         android:id="@id/main_tab"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-
 
         <com.google.android.material.tabs.TabItem
             android:layout_width="match_parent"
@@ -67,6 +68,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Categories" />
+
+        <com.google.android.material.tabs.TabItem
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Accounts" />
     </com.google.android.material.tabs.TabLayout>
 
 
