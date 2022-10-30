@@ -20,7 +20,7 @@ import com.example.myapplication.R;
 import com.example.myapplication.RecyclerItemClickListener;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
-import com.example.myapplication.inter.recyclerCategoriesAdapter;
+import com.example.myapplication.datahandlers.adapters.recyclerCategoriesAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -126,7 +126,7 @@ public class CategoriesFragment extends Fragment {
         this.setTransactionAdapter(this.categories);
     }
 
-    protected void setTransactionAdapter(List<CategoriesModel> categories){
+    public void setTransactionAdapter(List<CategoriesModel> categories){
         recyclerCategoriesAdapter adapter = new recyclerCategoriesAdapter(new ArrayList<CategoriesModel>(categories));
 
         categoriesListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));

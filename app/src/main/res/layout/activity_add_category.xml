@@ -33,8 +33,6 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="ToggleButton"
-        android:textOff="Expense"
-        android:textOn="Income"
         app:layout_constraintBottom_toBottomOf="@+id/confirm_add_cattegory_button"
         app:layout_constraintEnd_toStartOf="@+id/confirm_add_cattegory_button"
         app:layout_constraintStart_toStartOf="parent"

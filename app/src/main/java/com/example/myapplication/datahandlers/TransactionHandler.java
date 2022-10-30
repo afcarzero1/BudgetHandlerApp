@@ -34,8 +34,8 @@ public class TransactionHandler extends SQLiteOpenHelper {
     public static final String CATEGORIES = "CATEGORIES";
 
 
-    public static final String TYPE_EXPENSE = "expense";
-    public static final String TYPE_INCOME = "income";
+    public static final String TYPE_EXPENSE = "Expense";
+    public static final String TYPE_INCOME = "Income";
 
     public TransactionHandler(@Nullable Context context) {
         super(context, "transactions.db", null, 1);
@@ -56,7 +56,7 @@ public class TransactionHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         // Type, Category, Initial_Date, Recurrency_Type, Recurrency_Value,Value
 
-
+        String databaseConfiguration = "PRAGMA foreign_keys = ON;";
 
         String createCurrenciesTableStatement = "CREATE TABLE " + CURRENCIES + " (" +
                 CurrencyModel.FIELDS.NAME.getSqlName() + " TEXT PRIMARY KEY)";
@@ -92,6 +92,7 @@ public class TransactionHandler extends SQLiteOpenHelper {
                 CATEGORIES+" ("+CategoriesModel.FIELDS.NAME.getSqlName()+","+CategoriesModel.FIELDS.TYPE.getSqlName() +"))";
 
 
+        db.execSQL(databaseConfiguration);
         db.execSQL(createCurrenciesTableStatement);
         db.execSQL(createAccountTableStatement);
         db.execSQL(createCategoriesTableStatement);
@@ -118,6 +119,15 @@ public class TransactionHandler extends SQLiteOpenHelper {
     @Override
     public void onUpgrade(SQLiteDatabase sqLiteDatabase, int i, int i1) {
 
+    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        if (!db.isReadOnly()) {
+            // Enable foreign key constraints
+            db.execSQL("PRAGMA foreign_keys=ON;");
+        }
     }
 
     // TRANSACTION TABLE METHODS

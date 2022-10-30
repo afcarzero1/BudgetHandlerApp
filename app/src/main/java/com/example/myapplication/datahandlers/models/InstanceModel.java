@@ -26,7 +26,7 @@ public abstract class InstanceModel {
             myObject.fromCursor(cv);
             return myObject;
         } catch (Exception e){
-            throw new RuntimeException("Failed to create instance");
+            throw new RuntimeException("Failed to create instance of class" + clazz.toString());
         }
     }
 

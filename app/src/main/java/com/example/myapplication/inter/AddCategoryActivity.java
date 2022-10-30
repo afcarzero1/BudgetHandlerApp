@@ -25,6 +25,11 @@ public class AddCategoryActivity extends Activity {
         this.setTitle("Add category");
         this.et_category_name = (EditText) findViewById(R.id.category_name_edit_text);
         this.tb_type = (ToggleButton) findViewById(R.id.toggleButton);
+
+
+        this.tb_type.setText(TransactionHandler.TYPE_EXPENSE);
+        this.tb_type.setTextOff(TransactionHandler.TYPE_EXPENSE);
+        this.tb_type.setTextOn(TransactionHandler.TYPE_INCOME);
         configureButton();
     }
 
@@ -58,16 +63,17 @@ public class AddCategoryActivity extends Activity {
 
         try {
             cm = retrieveDataFromFields();
-            th.addCategory(cm);
-            Toast.makeText(AddCategoryActivity.this,"Category added", Toast.LENGTH_SHORT).show();
+            boolean success = th.addCategory(cm);
+            if (success){
+                Toast.makeText(AddCategoryActivity.this,"Category added", Toast.LENGTH_SHORT).show();}
+            else{
+                Toast.makeText(AddCategoryActivity.this,"Error",Toast.LENGTH_LONG).show();
+            }
             setResult(Activity.RESULT_OK);
             finish();
         }catch (Exception e){
             Toast.makeText(AddCategoryActivity.this,"Error",Toast.LENGTH_LONG).show();
         }
-
-
-
     }
 
     protected boolean validateFields(){
@@ -77,17 +83,18 @@ public class AddCategoryActivity extends Activity {
 
     protected CategoriesModel retrieveDataFromFields(){
         //todo : add here support for parent class
-        return new CategoriesModel(this.et_category_name.getText().toString(),tb_type.getText().toString(),"base","expense");
+        return new CategoriesModel(this.et_category_name.getText().toString(),
+                this.tb_type.getText().toString(),
+                "base",
+                this.tb_type.getText().toString());
     }
 
 
     private boolean checkNotEmpty(EditText field){
         if(field.getText().length()==0){
             field.setError("This field must have a value");
-
             return false;
         }
         return true;
     }
-
 }

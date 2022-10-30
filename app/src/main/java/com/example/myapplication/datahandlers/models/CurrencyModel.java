@@ -34,6 +34,8 @@ public class CurrencyModel extends InstanceModel {
         this.name = name;
     }
 
+    public CurrencyModel(){}
+
     public void setName(String name) {
         this.name = name;
     }

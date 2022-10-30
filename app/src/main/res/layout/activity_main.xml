@@ -3,6 +3,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main_relative_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
@@ -12,26 +13,26 @@
         android:id="@+id/add_income_floating_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_above="@+id/add_expense_floating_button"
+        android:layout_alignParentRight="true"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="16dp"
         android:clickable="true"
         android:onClick="launchAddTransaction"
         app:backgroundTint="@android:color/holo_green_light"
-        android:layout_above="@+id/add_expense_floating_button"
-        android:layout_alignParentRight="true"
         app:srcCompat="@android:drawable/ic_input_add" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/add_expense_floating_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
         android:clickable="true"
         android:onClick="launchAddTransaction"
         app:backgroundTint="@android:color/holo_red_dark"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
         app:srcCompat="@android:drawable/ic_input_add" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton

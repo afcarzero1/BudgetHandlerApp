@@ -1,4 +1,4 @@
-package com.example.myapplication.datahandlers;
+package com.example.myapplication.datahandlers.adapters;
 
 
 import android.content.Context;
@@ -14,6 +14,8 @@ import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.myapplication.R;
+import com.example.myapplication.datahandlers.TransactionHandler;
+import com.example.myapplication.datahandlers.TransactionModel;
 
 import java.util.ArrayList;
 

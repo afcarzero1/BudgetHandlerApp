@@ -38,6 +38,8 @@ public class AccountModel extends InstanceModel {
         this.initialBalance = initialBalance;
     }
 
+    public AccountModel(){};
+
     public String getName() {
         return name;
     }

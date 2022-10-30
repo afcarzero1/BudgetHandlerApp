@@ -6,7 +6,6 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
 import android.app.Activity;
@@ -22,16 +21,15 @@ import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.models.CurrencyModel;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.example.myapplication.datahandlers.TransactionModel;
-import com.example.myapplication.datahandlers.RecyclerTransactionAdapter;
 import com.example.myapplication.inter.AddCategoryActivity;
 import com.example.myapplication.inter.AddTransactionActivity;
 import com.example.myapplication.inter.CategoriesActivity;
-import com.example.myapplication.inter.recyclerCategoriesAdapter;
+import com.example.myapplication.mainfragments.CategoriesFragment;
 import com.example.myapplication.mainfragments.MainFragmentAdapter;
+import com.example.myapplication.mainfragments.TransactionsFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.tabs.TabLayout;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -57,6 +55,8 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
             this.value = value;
         }
 
+        String getIndex(){return String.valueOf(value);}
+
         @RequiresApi(api = Build.VERSION_CODES.N)
         public static Optional<Tabs> valueOf(int value) {
             return Arrays.stream(values())
@@ -75,15 +75,15 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
         TransactionHandler th = new TransactionHandler(this);
         th.addCurrency(new CurrencyModel("eur"));
+        List<AccountModel> a = th.getAllAccounts(true);
         th.addAccount(new AccountModel("test","eur",(float)0));
+        a = th.getAllAccounts(true);
 
-        // Add root category
+        // Add root categories
         th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_EXPENSE,null,null));
         th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_INCOME,null,null));
 
         List<CategoriesModel> l = th.getAllCategories(true);
-
-        th.addCategory(new CategoriesModel("rent",TransactionHandler.TYPE_EXPENSE,"base",TransactionHandler.TYPE_EXPENSE));
 
         // Configure buttons
         this.configureButtons();
@@ -254,16 +254,19 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
     }
 
     protected void setTransactionAdapter(List<TransactionModel> transactions){
+        //todo : implement cleaner way for retireveing the recycler adapter
+        TransactionsFragment myFragment = (TransactionsFragment)getSupportFragmentManager().findFragmentByTag("f"+Tabs.TRANSACTIONS.getIndex());
+        if(myFragment != null && myFragment.isAdded()){
+            myFragment.setTransactionAdapter(transactions);
+        }
 
-        RecyclerView rv=findViewById(R.id.all_transaction_recycler_view);
-        RecyclerTransactionAdapter adapter = new RecyclerTransactionAdapter(new ArrayList<TransactionModel>(transactions));
-        rv.setAdapter(adapter);
     }
 
     protected void setCategoriesAdapter(List<CategoriesModel> categories){
-        RecyclerView rv = findViewById(R.id.recycler_view_categories);
-        recyclerCategoriesAdapter adapter = new recyclerCategoriesAdapter(new ArrayList<CategoriesModel>(categories));
-        rv.setAdapter(adapter);
+        CategoriesFragment categoriesFragment = (CategoriesFragment) getSupportFragmentManager().findFragmentByTag("f"+Tabs.CATEGORIES.getIndex());
+        if(categoriesFragment != null && categoriesFragment.isAdded()){
+            categoriesFragment.setTransactionAdapter(categories);
+        }
     }
 
     @Override

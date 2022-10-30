@@ -22,7 +22,6 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.myapplication.R;
@@ -30,9 +29,8 @@ import com.example.myapplication.RecyclerItemClickListener;
 import com.example.myapplication.common_functionality.HideItemsInterface;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.example.myapplication.datahandlers.TransactionModel;
-import com.example.myapplication.datahandlers.RecyclerTransactionAdapter;
+import com.example.myapplication.datahandlers.adapters.RecyclerTransactionAdapter;
 import com.example.myapplication.inter.EditTransactionActivity;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -197,7 +195,7 @@ public class TransactionsFragment extends Fragment {
 
     }
 
-    protected void setTransactionAdapter(List<TransactionModel> transactions){
+    public void setTransactionAdapter(List<TransactionModel> transactions){
         RecyclerTransactionAdapter adapter = new RecyclerTransactionAdapter(new ArrayList<TransactionModel>(transactions));
         transactionListRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         transactionListRecyclerView.setItemAnimator(new DefaultItemAnimator());

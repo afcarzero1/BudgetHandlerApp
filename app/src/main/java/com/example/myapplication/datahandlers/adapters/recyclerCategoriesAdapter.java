@@ -1,4 +1,4 @@
-package com.example.myapplication.inter;
+package com.example.myapplication.datahandlers.adapters;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,13 +28,11 @@ public class recyclerCategoriesAdapter extends RecyclerView.Adapter<recyclerCate
 
         final private TextView category_name;
         final private TextView category_type;
-        private int id;
 
         public MyViewHolder(final View view){
             super(view);
             category_name = view.findViewById(R.id.category_name);
             category_type = view.findViewById(R.id.type_category_text);
-            id=-1;
         }
     }
 
@@ -52,13 +50,9 @@ public class recyclerCategoriesAdapter extends RecyclerView.Adapter<recyclerCate
 
     @Override
     public void onBindViewHolder(@NonNull recyclerCategoriesAdapter.MyViewHolder holder, int position) {
-        // Bind data to the view
-        String category_name = categories_list.get(position).getName();
-
         // Set data
-        holder.category_name.setText(category_name);
+        holder.category_name.setText(categories_list.get(position).getName());
         holder.category_type.setText(categories_list.get(position).getType());
-        holder.id = categories_list.get(position).getId();
     }
 
         @Override
