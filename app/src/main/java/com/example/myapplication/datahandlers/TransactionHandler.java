@@ -217,14 +217,6 @@ public class TransactionHandler extends SQLiteOpenHelper {
         // GROUP BY column
         String query;
 
-
-        query ="SELECT " +column+","+"SUM("+TransactionModel.FIELDS.VALUE.getSqlName()+")"+
-                " FROM " + TRANSACTIONS+
-                " WHERE " + TransactionModel.FIELDS.TYPE.getSqlName() +"='"+ type+ "'"+ " AND "+
-                "strftime('%m',"+TransactionModel.FIELDS.INITIAL_DATE.getSqlName()+")= '"+String.format(Locale.ENGLISH,"%02d", month)+"'"+ " AND "+
-                "strftime('%Y',"+TransactionModel.FIELDS.INITIAL_DATE.getSqlName()+")= '"+String.format(Locale.ENGLISH,"%04d", year)+"'"+
-                " GROUP BY " + column + " ORDER BY " + "SUM("+TransactionModel.FIELDS.VALUE.getSqlName()+")";
-
         //col=category
 
         query = "SELECT " + CATEGORIES +"."+CategoriesModel.FIELDS.NAME.getSqlName()+","+"reduced_transactions.sum"+
@@ -261,11 +253,35 @@ public class TransactionHandler extends SQLiteOpenHelper {
 
         }
 
-
-
-
         cursor.close();
         db.close();
+
+        return lvCategoryToExpense;
+    }
+
+
+    public Map<String,Float> groupTransactionsBy(String baseColumn,String type, String column, int year, int month){
+
+        Node<String> lvCategoryTree=buildCategoryTree(type);
+        Map<String,Float> lvCategoryToExpenseAllCategories = groupTransactionsBy(type,column,year,month);
+        Map<String,Float> lvCategoryToExpense = new HashMap<>();
+
+        Node<String> baseNode;
+        // show only direct child of the parent
+        if(!baseColumn.equals(lvCategoryTree.getData())){
+            baseNode = lvCategoryTree.findChild(baseColumn);
+        }else{
+            baseNode=lvCategoryTree;
+        }
+
+        if(baseNode!= null){
+            List<Node<String>> lvAllChildren = baseNode.getChildren();
+
+            for (Node<String> child : lvAllChildren){
+                lvCategoryToExpense.put(child.getData(), lvCategoryToExpenseAllCategories.get(child.getData()));
+            }
+
+        }
 
         return lvCategoryToExpense;
     }

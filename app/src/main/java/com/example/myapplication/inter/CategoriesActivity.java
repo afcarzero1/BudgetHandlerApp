@@ -13,13 +13,15 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.datahandlers.adapters.RecyclerTransactionAdapter;
-import com.example.myapplication.datahandlers.models.TransactionModel;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
+import com.example.myapplication.datahandlers.models.TransactionModel;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.github.dewinjm.monthyearpicker.MonthYearPickerDialog;
 import com.github.dewinjm.monthyearpicker.MonthYearPickerDialogFragment;
@@ -44,14 +46,18 @@ import java.util.Map;
 public class CategoriesActivity extends AppCompatActivity {
 
     private ActivityResultLauncher<Intent> launcher;
-    private HorizontalBarChart categories_bar_chart;
-    private RecyclerView transactionsView;
-    private TextView et_type;
-    private TextView et_date;
+    private HorizontalBarChart mCategoriesBarChart;
+    private RecyclerView mTransactionsView;
+    private TextView mTypeTextView;
+    private TextView mDateTextView;
+    private Spinner mBaseCategorySpinner;
 
 
     private int monthToShow;
     private int yearToShow;
+
+    private List<String> mExpenseCategoriesNames;
+    private List<String> mIncomeCategoriesNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,15 +67,17 @@ public class CategoriesActivity extends AppCompatActivity {
 
         //new MonthYearPickerDialog().show(getSupportFragmentManager(),"about");
 
+        retrieveAvailableCategories();
         // Find the graph
-        this.categories_bar_chart = (HorizontalBarChart) findViewById(R.id.categories_bar_chart);
-        this.transactionsView = (RecyclerView) findViewById(R.id.month_transactions);
+        this.mCategoriesBarChart = (HorizontalBarChart) findViewById(R.id.categories_bar_chart);
+        this.mTransactionsView = (RecyclerView) findViewById(R.id.month_transactions);
 
         //Get date from user as soon as entered
         this.onSelectMonth(null);
 
         this.configureDateField();
         this.configureTypeField();
+        this.configureCategoryField();
 
         //todo set here current month and year and not hard coded
         this.yearToShow=2022;
@@ -83,12 +91,12 @@ public class CategoriesActivity extends AppCompatActivity {
 
     protected void updateList(){
         TransactionHandler th = new TransactionHandler(CategoriesActivity.this);
-        List<TransactionModel> transactions= th.getAllTransactions(et_type.getText().toString(),this.yearToShow,this.monthToShow,true);
+        List<TransactionModel> transactions= th.getAllTransactions(mTypeTextView.getText().toString(),this.yearToShow,this.monthToShow,true);
 
         RecyclerTransactionAdapter adapter = new RecyclerTransactionAdapter(new ArrayList<TransactionModel>(transactions));
-        this.transactionsView.setLayoutManager(new LinearLayoutManager(CategoriesActivity.this));
-        this.transactionsView.setItemAnimator(new DefaultItemAnimator());
-        this.transactionsView.setAdapter(adapter);
+        this.mTransactionsView.setLayoutManager(new LinearLayoutManager(CategoriesActivity.this));
+        this.mTransactionsView.setItemAnimator(new DefaultItemAnimator());
+        this.mTransactionsView.setAdapter(adapter);
         adapter.notifyDataSetChanged();
     }
 
@@ -101,9 +109,10 @@ public class CategoriesActivity extends AppCompatActivity {
         int currentYear = this.yearToShow;
         int currentMonth = this.monthToShow;
 
-        String typeToRetrieve=String.valueOf(et_type.getText());
+        String typeToRetrieve=String.valueOf(mTypeTextView.getText());
+        String baseCategory = mBaseCategorySpinner.getSelectedItem().toString();
 
-        Map<String,Float> categories_to_expense = ch.groupTransactionsBy(typeToRetrieve, TransactionModel.FIELDS.CATEGORY.getSqlName() ,currentYear, currentMonth);
+        Map<String,Float> categories_to_expense = ch.groupTransactionsBy(baseCategory,typeToRetrieve, TransactionModel.FIELDS.CATEGORY.getSqlName() ,currentYear, currentMonth);
 
         this.plotValues2(categories_to_expense);
     }
@@ -121,19 +130,19 @@ public class CategoriesActivity extends AppCompatActivity {
         configureXAxis(to_plot);
 
         // Set the dataset
-        categories_bar_chart.setData(new BarData(barDataSet));
+        mCategoriesBarChart.setData(new BarData(barDataSet));
 
 
 
-        this.categories_bar_chart.setScaleEnabled(false);
-        this.categories_bar_chart.getLegend().setEnabled(false);
-        this.categories_bar_chart.setDrawBarShadow(false);
-        this.categories_bar_chart.getDescription().setEnabled(false);
-        this.categories_bar_chart.setPinchZoom(false);
-        this.categories_bar_chart.setDrawGridBackground(true);
+        this.mCategoriesBarChart.setScaleEnabled(false);
+        this.mCategoriesBarChart.getLegend().setEnabled(false);
+        this.mCategoriesBarChart.setDrawBarShadow(false);
+        this.mCategoriesBarChart.getDescription().setEnabled(false);
+        this.mCategoriesBarChart.setPinchZoom(false);
+        this.mCategoriesBarChart.setDrawGridBackground(true);
         // Plot it by notifying change and re-drawing
-        categories_bar_chart.notifyDataSetChanged();
-        categories_bar_chart.invalidate();
+        mCategoriesBarChart.notifyDataSetChanged();
+        mCategoriesBarChart.invalidate();
     }
 
     protected void configureYAxis(Map<String,Float> to_plot){
@@ -145,7 +154,7 @@ public class CategoriesActivity extends AppCompatActivity {
 
 
 
-        YAxis rightAxis = this.categories_bar_chart.getAxisRight();
+        YAxis rightAxis = this.mCategoriesBarChart.getAxisRight();
         rightAxis.setTextColor(Color.BLACK);
         rightAxis.setTextSize(14);
         rightAxis.setDrawAxisLine(true);
@@ -159,7 +168,7 @@ public class CategoriesActivity extends AppCompatActivity {
         rightAxis.setPosition(YAxis.YAxisLabelPosition.OUTSIDE_CHART);
 
 
-        YAxis leftAxis = this.categories_bar_chart.getAxisLeft();
+        YAxis leftAxis = this.mCategoriesBarChart.getAxisLeft();
         leftAxis.setAxisMinimum(0);
         leftAxis.setDrawAxisLine(true);
         leftAxis.setLabelCount(0, true);
@@ -188,7 +197,7 @@ public class CategoriesActivity extends AppCompatActivity {
 
 
         // Get xaxis of the bar graph and do manipulations
-        XAxis xAxis = this.categories_bar_chart.getXAxis();
+        XAxis xAxis = this.mCategoriesBarChart.getXAxis();
         xAxis.enableGridDashedLine(10f, 10f, 0f);
         xAxis.setTextColor(Color.BLACK);
         xAxis.setTextSize(12);
@@ -251,9 +260,9 @@ public class CategoriesActivity extends AppCompatActivity {
     }
 
     protected void configureDateField(){
-        this.et_date = findViewById(R.id.date_categories);
+        this.mDateTextView = findViewById(R.id.date_categories);
 
-        this.et_date.setOnClickListener(new View.OnClickListener() {
+        this.mDateTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 // Show dialog for selecting the month
@@ -263,14 +272,18 @@ public class CategoriesActivity extends AppCompatActivity {
     }
 
     protected void configureTypeField(){
+        //COnfigure also spinner
+        mBaseCategorySpinner = (Spinner) findViewById(R.id.spinner_category_base);
+        setAdapterSpinner(mExpenseCategoriesNames);
+
         // Find the view
-        this.et_type = (TextView) findViewById(R.id.type);
+        this.mTypeTextView = (TextView) findViewById(R.id.type);
 
         // Set default type
-        this.et_type.setText(TransactionHandler.TYPE_EXPENSE);
+        this.mTypeTextView.setText(TransactionHandler.TYPE_EXPENSE);
 
         // Set the listener for when the text is clicked
-        this.et_type.setOnClickListener(
+        this.mTypeTextView.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
@@ -294,7 +307,13 @@ public class CategoriesActivity extends AppCompatActivity {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 String strName = arrayAdapter.getItem(which);
-                                et_type.setText(strName);
+                                if(strName==TransactionHandler.TYPE_EXPENSE){
+                                    setAdapterSpinner(mExpenseCategoriesNames);
+                                }else{
+                                    setAdapterSpinner(mIncomeCategoriesNames);
+                                }
+
+                                mTypeTextView.setText(strName);
                                 updateGraph();
                             }
                         });
@@ -303,6 +322,29 @@ public class CategoriesActivity extends AppCompatActivity {
                     }
                 }
         );
+    }
+
+    protected void configureCategoryField(){
+        mBaseCategorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                updateGraph();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
+    }
+
+    protected void setAdapterSpinner(List<String> spinnerValues){
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(CategoriesActivity.this, android.R.layout.simple_spinner_item,spinnerValues);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        mBaseCategorySpinner.setAdapter(adapter);
+
+        mBaseCategorySpinner.setSelection(adapter.getPosition("base"));
+
     }
 
     protected void onSelectMonth(View view){
@@ -337,5 +379,22 @@ public class CategoriesActivity extends AppCompatActivity {
         dialogFragment.show(getSupportFragmentManager(), null);
 
         Log.d("DATE_PICKER",String.valueOf(yearSelected)+'/'+String.valueOf(monthSelected));
+    }
+
+    //todo : introduce this in a helper class to avoid code rpetition
+    protected void retrieveAvailableCategories(){
+        TransactionHandler th = new TransactionHandler(this);
+        List<CategoriesModel> allCategories = th.getAllCategories(TransactionHandler.TYPE_EXPENSE);
+        List<CategoriesModel> incomeCategories = th.getAllCategories(TransactionHandler.TYPE_INCOME);
+
+        mExpenseCategoriesNames = new ArrayList<>();
+        mIncomeCategoriesNames = new ArrayList<>();
+
+        for(CategoriesModel cm : allCategories){
+            mExpenseCategoriesNames.add(cm.getName());
+        }
+        for(CategoriesModel cm : incomeCategories){
+            mIncomeCategoriesNames.add(cm.getName());
+        }
     }
 }

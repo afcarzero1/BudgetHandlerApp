@@ -13,7 +13,7 @@ public class Node<T> {
 
 	private T data = null; // Data hold by the tree
 
-	private List<Node<T>> children = new ArrayList<>();
+	private List<Node<T>> children = new LinkedList<>();
 
 	private Node<T> parent = null;
 
@@ -35,6 +35,39 @@ public class Node<T> {
 
 	public List<Node<T>> getChildren() {
 		return children;
+	}
+
+	public List<Node<T>> getAllChildren(){
+
+		List<Node<T>> nodeList = new LinkedList<Node<T>>();
+
+
+		for(Node<T> child : children){
+			nodeList.addAll(child.getChildren());
+		}
+
+		return nodeList;
+	}
+
+	public Node<T> findChild(T data){
+
+		for( Node<T> child : children){
+			if(child.getData().equals(data)){
+				//Found in direct child
+				return child;
+			}
+		}
+
+		// If it is not a direct child then
+		for(Node<T> child : children){
+			Node<T> childResult = child.findChild(data);
+			if(childResult!=null){
+				return childResult;
+			}
+		}
+
+		// If not found return null
+		return null;
 	}
 
 	public T getData() {
