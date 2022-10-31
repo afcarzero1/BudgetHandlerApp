@@ -11,8 +11,10 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Build;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 
 import com.example.myapplication.datahandlers.models.AccountModel;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
@@ -280,6 +282,7 @@ public class TransactionHandler extends SQLiteOpenHelper {
     }
 
     public List<AccountModel> getAllAccounts(boolean ordered){
+
         String query = "SELECT * FROM " + ACCOUNTS;
 
         if(ordered){
@@ -287,6 +290,54 @@ public class TransactionHandler extends SQLiteOpenHelper {
         }
 
         return getAllFromQuery(query,AccountModel.class);
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public List<AccountModel> getAllAccountsBalance(boolean ordered){
+        // account , initial balance
+        List<AccountModel> accountsList = getAllAccounts(ordered);
+
+        Map<String,Float> accountsDiff = getAccountDiff();
+
+        for( AccountModel am : accountsList){
+
+            Float delta = (float)0;
+            if(accountsDiff.containsKey(am.getName())){
+                delta += accountsDiff.get(am.getName());
+            }
+            am.setInitialBalance(am.getInitialBalance()+delta);
+        }
+
+        return accountsList;
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    private Map<String,Float> getAccountDiff(){
+        // account , type , sum
+        String query = "SELECT "+TransactionModel.FIELDS.ACCOUNT.getSqlName()+"," +TransactionModel.FIELDS.TYPE.getSqlName()+"," +"SUM("+ TransactionModel.FIELDS.VALUE.getSqlName()+")"+
+                " FROM "+ TRANSACTIONS +
+                " GROUP BY "+ TransactionModel.FIELDS.ACCOUNT.getSqlName() +" ,"+ TransactionModel.FIELDS.TYPE.getSqlName();
+
+
+        SQLiteDatabase db = getReadableDatabase();
+        Cursor cursor = db.rawQuery(query,null);
+
+        Map<String,Float> accountToDiff= new HashMap<>();
+
+        if(cursor.moveToFirst()){
+            do{
+                String lvAccountName = cursor.getString(0);
+                String lvType = cursor.getString(1);
+                Float lvValue = cursor.getFloat(2);
+                if(lvType.equals(TYPE_EXPENSE)){lvValue=lvValue*-1;} // Invert sign if it is an expense
+                accountToDiff.put(lvAccountName,accountToDiff.getOrDefault(lvAccountName,(float)0)+lvValue);
+            }while(cursor.moveToNext());
+        }else{
+            //Handle no transaction situation
+        }
+        cursor.close();
+        db.close();
+        return accountToDiff;
     }
 
     //CURRENCY TABLE METHODS

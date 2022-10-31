@@ -244,15 +244,19 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
         switch (v){
             case TRANSACTIONS:
+                unHideButton(btnIncome);
                 btnExpense.setBackgroundTintList(MainActivity.this.getResources().getColorStateList(R.color.holo_red_dark));
                 break;
             case CATEGORIES:
+                hideButton(btnIncome,true);
                 btnExpense.setBackgroundTintList(MainActivity.this.getResources().getColorStateList(R.color.holo_blue_dark));
                 break;
             case ACCOUNTS:
+                hideButton(btnIncome,true);
                 btnExpense.setBackgroundTintList(MainActivity.this.getResources().getColorStateList(R.color.holo_purple));
                 break;
             default:
+                unHideButton(btnIncome);
                 btnExpense.setBackgroundTintList(MainActivity.this.getResources().getColorStateList(R.color.holo_red_dark));
         }
     }
@@ -311,7 +315,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
     protected void updateAccountView() {
 
-        List<AccountModel> accounts = new TransactionHandler(MainActivity.this).getAllAccounts(true);
+        List<AccountModel> accounts = new TransactionHandler(MainActivity.this).getAllAccountsBalance(true);
         this.setAccountsAdapater(accounts);
 
     }
@@ -376,6 +380,13 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
                     btn.show();
                 }
             },5000);
+        }
+    }
+
+    protected void hideButton(FloatingActionButton btn,boolean permanently){
+        // Hide the button
+        if (btn.isShown()){
+            btn.hide();
         }
     }
 }

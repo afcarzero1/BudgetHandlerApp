@@ -71,6 +71,6 @@ public class AccountsFragment extends Fragment {
 
     public void dataInitialize(){
         TransactionHandler th = new TransactionHandler(getActivity());
-        this.mAccounts = th.getAllAccounts(true);
+        this.mAccounts = th.getAllAccountsBalance(true);
     }
 }
