@@ -16,6 +16,7 @@ import android.os.Build;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import com.example.myapplication.common_functionality.tree.Node;
 import com.example.myapplication.datahandlers.models.AccountModel;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.models.CurrencyModel;
@@ -271,6 +272,48 @@ public class TransactionHandler extends SQLiteOpenHelper {
     public List<CategoriesModel> getAllCategories(String type){
         String query = "SELECT * FROM " + CATEGORIES + " WHERE "+ CategoriesModel.FIELDS.TYPE.getSqlName() +" = \""+ type +"\"";
         return getAllFromQuery(query,CategoriesModel.class);
+    }
+
+    public Node<String> buildCategoryTree(String type){
+        // Create the base node , no tother node has this name
+        Node<String> lvBaseExpense = new Node<>("base");
+
+        List<CategoriesModel> lvAllCategories = getAllCategories(type);
+        Map<String,Node<String>> lvCategoryToNode =new HashMap<>();
+        Map<String,String> lvCategoryToParent = new HashMap<>();
+
+        // Create all nodes without a parent set
+        List<Node<String>> allNodes = new ArrayList<>();
+
+
+        lvCategoryToNode.put("base",lvBaseExpense);
+        lvCategoryToParent.put("base",null);
+        allNodes.add(lvBaseExpense);
+
+        for(CategoriesModel model : lvAllCategories){
+            if(model.getName().equals("base")){continue;}
+            Node<String> nodeToInsert = new Node<String>(model.getName());
+            lvCategoryToNode.put(model.getName(),nodeToInsert);
+            lvCategoryToParent.put(model.getName(),model.getParentName());
+            allNodes.add(nodeToInsert);
+        }
+
+
+        // Create dependencies between nodes
+        for (Node<String> node : allNodes){
+
+            // Retireve the parent
+            String childName = node.getData();
+            String parentName = lvCategoryToParent.get(childName);
+            Node<String> parentNode = lvCategoryToNode.get(parentName);
+            if(parentNode==null){continue;} // Statement for the base
+
+            if(parentName == childName){throw new RuntimeException("Illegal relationship (node is its own parent)");}
+            // Add the child
+            parentNode.addChild(node);
+        }
+
+        return lvBaseExpense;
     }
 
 

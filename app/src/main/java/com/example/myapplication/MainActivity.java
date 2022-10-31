@@ -17,6 +17,7 @@ import android.view.View;
 
 import com.example.myapplication.common_functionality.HideItemsInterface;
 import com.example.myapplication.common_functionality.UpdateItemsInterface;
+import com.example.myapplication.common_functionality.tree.Node;
 import com.example.myapplication.datahandlers.models.AccountModel;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.models.CurrencyModel;
@@ -82,7 +83,13 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         setContentView(R.layout.activity_main);
         setTitle("Budget Handler");
 
+
+
+
+
+
         TransactionHandler th = new TransactionHandler(this);
+        Node<String> root = th.buildCategoryTree(TransactionHandler.TYPE_EXPENSE);
         th.addCurrency(new CurrencyModel("eur"));
         List<AccountModel> a = th.getAllAccounts(true);
         th.addAccount(new AccountModel("test","eur",(float)0));

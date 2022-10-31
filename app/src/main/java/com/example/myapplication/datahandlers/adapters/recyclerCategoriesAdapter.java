@@ -16,28 +16,30 @@ import java.util.ArrayList;
 
 public class recyclerCategoriesAdapter extends RecyclerView.Adapter<recyclerCategoriesAdapter.MyViewHolder>{
 
-    private ArrayList<CategoriesModel> categories_list;
+    private ArrayList<CategoriesModel> mCategoriesList;
 
 
     public recyclerCategoriesAdapter(ArrayList<CategoriesModel> categories_list){
-        this.categories_list=categories_list;
+        this.mCategoriesList =categories_list;
     }
 
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
-        final private TextView category_name;
-        final private TextView category_type;
+        final private TextView mCategoryName;
+        final private TextView mCategoryType;
+        final private TextView mParentCategoryname;
 
         public MyViewHolder(final View view){
             super(view);
-            category_name = view.findViewById(R.id.category_name);
-            category_type = view.findViewById(R.id.type_category_text);
+            mCategoryName = view.findViewById(R.id.category_name);
+            mCategoryType = view.findViewById(R.id.type_category_text);
+            mParentCategoryname = view.findViewById(R.id.category_parent_text_view);
         }
     }
 
     public CategoriesModel getItem(int position){
-        return this.categories_list.get(position);
+        return this.mCategoriesList.get(position);
     }
 
 
@@ -51,13 +53,17 @@ public class recyclerCategoriesAdapter extends RecyclerView.Adapter<recyclerCate
     @Override
     public void onBindViewHolder(@NonNull recyclerCategoriesAdapter.MyViewHolder holder, int position) {
         // Set data
-        holder.category_name.setText(categories_list.get(position).getName());
-        holder.category_type.setText(categories_list.get(position).getType());
+        holder.mCategoryName.setText(mCategoriesList.get(position).getName());
+        holder.mCategoryType.setText(mCategoriesList.get(position).getType());
+        String parentName;
+        if(mCategoriesList.get(position).getParentName()==null){holder.mParentCategoryname.setText("");}else{
+            holder.mParentCategoryname.setText(mCategoriesList.get(position).getParentName());
+        }
     }
 
         @Override
     public int getItemCount(){
-        return categories_list.size();
+        return mCategoriesList.size();
     }
 
 }
