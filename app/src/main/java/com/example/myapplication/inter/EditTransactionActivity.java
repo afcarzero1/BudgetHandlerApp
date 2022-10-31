@@ -21,13 +21,6 @@ public class EditTransactionActivity extends AddTransactionActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if(transaction_type==null){
-
-
-
-
-        }
-
 
 
         // Change button from add to delete

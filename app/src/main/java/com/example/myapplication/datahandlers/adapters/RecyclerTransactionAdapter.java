@@ -37,25 +37,25 @@ public class RecyclerTransactionAdapter extends RecyclerView.Adapter<RecyclerTra
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
-        final private TextView category_textView;
-        final private TextView type;
-        final private TextView date;
-        final private TextView value;
+        final private TextView mCategoryTextView;
+        final private TextView mAccountTextView;
+        final private TextView mDateTextView;
+        final private TextView mValueTextView;
         final private ImageView transaction_icon;
-        private int id;
+        private int mId;
 
         final private Context context;
 
 
         public MyViewHolder(final View view ){
             super(view);
-            category_textView = view.findViewById(R.id.category_text);
-            date = view.findViewById(R.id.date_text);
-            type = view.findViewById(R.id.type_text);
-            value = view.findViewById(R.id.value_text);
+            mCategoryTextView = view.findViewById(R.id.category_text);
+            mDateTextView = view.findViewById(R.id.date_text);
+            mAccountTextView = view.findViewById(R.id.type_text);
+            mValueTextView = view.findViewById(R.id.value_text);
             transaction_icon= view.findViewById(R.id.transaction_icon_image);
             //Set icon depending on the type
-            id=-1;
+            mId =-1;
             context=view.getContext();
         }
     }
@@ -77,11 +77,11 @@ public class RecyclerTransactionAdapter extends RecyclerView.Adapter<RecyclerTra
         String value = transactionList.get(position).getValue().toString();
 
 
-        holder.category_textView.setText(category);
-        holder.date.setText(date);
-        holder.type.setText(type);
-        holder.value.setText(value);
-        holder.id= transactionList.get(position).getId();
+        holder.mCategoryTextView.setText(category);
+        holder.mDateTextView.setText(date);
+        holder.mAccountTextView.setText(transactionList.get(position).getAccount());
+        holder.mValueTextView.setText(value);
+        holder.mId = transactionList.get(position).getId();
 
         Drawable expense_icon = ContextCompat.getDrawable(holder.context,R.drawable.expense_icon);
 

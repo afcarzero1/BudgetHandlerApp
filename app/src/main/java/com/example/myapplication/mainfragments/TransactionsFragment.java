@@ -27,6 +27,7 @@ import android.widget.Toast;
 import com.example.myapplication.R;
 import com.example.myapplication.RecyclerItemClickListener;
 import com.example.myapplication.common_functionality.HideItemsInterface;
+import com.example.myapplication.common_functionality.UpdateItemsInterface;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.example.myapplication.datahandlers.models.TransactionModel;
 import com.example.myapplication.datahandlers.adapters.RecyclerTransactionAdapter;
@@ -48,6 +49,7 @@ public class TransactionsFragment extends Fragment {
     private ActivityResultLauncher<Intent> launcher;
 
     private HideItemsInterface hideItemsInterface;
+    private UpdateItemsInterface mUpdateItemsInterface;
 
     public TransactionsFragment() {
         // Required empty public constructor
@@ -68,6 +70,7 @@ public class TransactionsFragment extends Fragment {
     public void onAttach(@NonNull Context context){
         super.onAttach(context);
         hideItemsInterface = (HideItemsInterface)context;
+        mUpdateItemsInterface = (UpdateItemsInterface) context;
     }
 
     @Override
@@ -167,6 +170,9 @@ public class TransactionsFragment extends Fragment {
                         if (result.getResultCode() == Activity.RESULT_OK){
                             // Update the view
                             updateTransactionView();
+
+                            //Tell to update accounts
+                            mUpdateItemsInterface.updateAccountView();
                         }
                     }
                 }

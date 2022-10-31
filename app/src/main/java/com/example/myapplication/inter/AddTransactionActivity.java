@@ -20,6 +20,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.myapplication.R;
+import com.example.myapplication.datahandlers.models.AccountModel;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.TransactionHandler;
 import com.example.myapplication.datahandlers.models.TransactionModel;
@@ -36,15 +37,17 @@ import java.util.Objects;
 public class AddTransactionActivity extends AppCompatActivity {
 
     final Calendar myCalendar = Calendar.getInstance();
-    EditText et_start_date;
-    EditText et_category;
-    EditText et_value;
-    Spinner et_recurrence_type;
-    EditText et_recurrence_value;
-    String transaction_type;
+    EditText mStartDateEditText;
+    EditText mCategoryEditText;
+    EditText mValueEditText;
+    Spinner mRecurrenceTypeSpinner;
+    EditText mRecurrenceValueEditText;
+    EditText mAccount;
+    String mTransactionType;
 
-    private int category_id_selected;
-    private List<CategoriesModel> availableCategories;
+    private int mIdOfSelectedCategory;
+    private List<CategoriesModel> mAvailableCategories;
+    private List<AccountModel> mAvailableAccounts;
 
     static final String[] RECURRENCE_TYPES = {"none", "days","weeks","months"};
 
@@ -57,20 +60,22 @@ public class AddTransactionActivity extends AppCompatActivity {
         //Set up the correct title
         Bundle extras = getIntent().getExtras();
         if (extras!=null){
-           transaction_type = extras.getString("type");
+           mTransactionType = extras.getString("type");
         }else{
-            transaction_type = "Transaction";
+            mTransactionType = "Transaction";
         }
-        category_id_selected=-1;
+        mIdOfSelectedCategory =-1; // Set invalid id
 
+        // Retrieve available categories and accounts
         TransactionHandler ch = new TransactionHandler(AddTransactionActivity.this);
-        availableCategories =  ch.getAllCategories(transaction_type);
+        mAvailableCategories =  ch.getAllCategories(mTransactionType);
+        mAvailableAccounts = ch.getAllAccounts(true);
 
         //Retrieve objects
         fetchEditText();
 
         // Set up title of transaction and button
-        ((TextView)findViewById(R.id.popup_title_add_expense)).setText(transaction_type);
+        ((TextView)findViewById(R.id.popup_title_add_expense)).setText(mTransactionType);
 
         // Setup button. Define function to be called when it is pressed. Finish activity and add transaction to database
         Button btn = (Button)findViewById(R.id.delete_button);
@@ -94,7 +99,9 @@ public class AddTransactionActivity extends AppCompatActivity {
         // Set up the spinner box
         setUpRecurrenceType();
 
-        setUpCategory();
+        // Setup the category field
+        setUpCategoryField();
+        setUpAccountField();
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)
@@ -125,15 +132,51 @@ public class AddTransactionActivity extends AppCompatActivity {
 
     }
 
-    protected void setUpCategory(){
+    protected void setUpAccountField(){
+        mAccount.setOnClickListener(
+                new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        AlertDialog.Builder builder = new AlertDialog.Builder(AddTransactionActivity.this);
+                        builder.setTitle("Choose...");
+                        String[] arr = new String[mAvailableAccounts.size()];
+                        int i =0;
+                        for (AccountModel am : mAvailableAccounts){
+                            arr[i] = am.getName();
+                            i++;
+                        }
+                        final ArrayAdapter<String> array_adapter = new ArrayAdapter<String>(AddTransactionActivity.this, android.R.layout.select_dialog_item,arr);
 
+                        // Srt buttons behaviour
+                        builder.setNegativeButton("cancel", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.dismiss();
+                            }
+                        });
+
+                        builder.setAdapter(array_adapter, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                String strName = array_adapter.getItem(which);
+                                mAccount.setText(strName);
+                            }
+                        });
+                        builder.show();
+                    }
+                }
+        );
+
+
+    }
+
+    protected void setUpCategoryField(){
         // Setup the dialog for choosing the category
-        et_category.setOnClickListener(
+        mCategoryEditText.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
                         // Open Category Picker
-
                         AlertDialog.Builder builder = new AlertDialog.Builder(AddTransactionActivity.this);
 
                         //builder.setIcon(androidx.transition.R.drawable.abc_ic_star_black_36dp);
@@ -141,7 +184,7 @@ public class AddTransactionActivity extends AppCompatActivity {
 
                         //todo : transfor into a recycler adapter for handling icon
                         TransactionHandler ch = new TransactionHandler(AddTransactionActivity.this);
-                        List<CategoriesModel> categories = ch.getAllCategories(transaction_type);
+                        List<CategoriesModel> categories = ch.getAllCategories(mTransactionType);
                         String [] arr= new String[categories.size()];
                         int i=0;
                         for (CategoriesModel cm : categories){
@@ -167,8 +210,8 @@ public class AddTransactionActivity extends AppCompatActivity {
                                 String strName = array_adapter.getItem(which);
 
                                 // This is the category selected
-                                AddTransactionActivity.this.category_id_selected=which;
-                                et_category.setText(strName);
+                                AddTransactionActivity.this.mIdOfSelectedCategory =which;
+                                mCategoryEditText.setText(strName);
                             }
                         });
                         builder.show();
@@ -189,7 +232,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     protected void setUpCalendar() {
 
         // Retrieve the date input text
-        et_start_date = (EditText) findViewById(R.id.popup_date_input);
+        mStartDateEditText = (EditText) findViewById(R.id.popup_date_input);
         DatePickerDialog.OnDateSetListener date = new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int day) {
@@ -199,7 +242,7 @@ public class AddTransactionActivity extends AppCompatActivity {
                 updateLabel();
             }
         };
-        et_start_date.setOnClickListener(new View.OnClickListener() {
+        mStartDateEditText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 new DatePickerDialog(AddTransactionActivity.this, date, myCalendar.get(Calendar.YEAR), myCalendar.get(Calendar.MONTH), myCalendar.get(Calendar.DAY_OF_MONTH)).show();
@@ -213,7 +256,7 @@ public class AddTransactionActivity extends AppCompatActivity {
     private void updateLabel(){
         String myFormat="MM/dd/yy";
         SimpleDateFormat dateFormat=new SimpleDateFormat(myFormat, Locale.US);
-        et_start_date.setText(dateFormat.format(myCalendar.getTime()));
+        mStartDateEditText.setText(dateFormat.format(myCalendar.getTime()));
     }
 
     /**
@@ -257,11 +300,12 @@ public class AddTransactionActivity extends AppCompatActivity {
 
 
     protected void fetchEditText(){
-        et_start_date = (EditText) findViewById(R.id.popup_date_input);
-         et_category= (EditText) findViewById(R.id.popup_category_input);
-         et_value= (EditText) findViewById(R.id.popup_value_input);
-         et_recurrence_value= (EditText) findViewById(R.id.popup_recurrency_input);
-         et_recurrence_type = (Spinner) findViewById(R.id.popup_recurrency_type_input);
+         mStartDateEditText = (EditText) findViewById(R.id.popup_date_input);
+         mCategoryEditText = (EditText) findViewById(R.id.popup_category_input);
+         mValueEditText = (EditText) findViewById(R.id.popup_value_input);
+         mRecurrenceValueEditText = (EditText) findViewById(R.id.popup_recurrency_input);
+         mRecurrenceTypeSpinner = (Spinner) findViewById(R.id.popup_recurrency_type_input);
+         mAccount = (EditText) findViewById(R.id.account_transaction_edit_text);
     }
 
 
@@ -269,11 +313,12 @@ public class AddTransactionActivity extends AppCompatActivity {
         // Category, date and value must have a value!
         // The check is repeated because of the compiler optimization
 
-        checkNotEmpty(et_category);
-        checkNotEmpty(et_start_date);
-        checkNotEmpty(et_value);
+        checkNotEmpty(mCategoryEditText);
+        checkNotEmpty(mStartDateEditText);
+        checkNotEmpty(mValueEditText);
+        checkNotEmpty(mAccount);
 
-        return checkNotEmpty(et_category) && checkNotEmpty(et_value) && checkNotEmpty(et_start_date) && category_id_selected!=-1;
+        return checkNotEmpty(mAccount) && checkNotEmpty(mCategoryEditText) && checkNotEmpty(mValueEditText) && checkNotEmpty(mStartDateEditText) && mIdOfSelectedCategory !=-1;
     }
 
     private boolean checkNotEmpty(EditText field){
@@ -295,13 +340,13 @@ public class AddTransactionActivity extends AppCompatActivity {
         TransactionModel transaction_model;
         // Create the customer model
 
-        String category = et_category.getText().toString();
-        String date = et_start_date.getText().toString();
+        String category = mCategoryEditText.getText().toString();
+        String date = mStartDateEditText.getText().toString();
         // Transform date to compatible format
         date = this.transformDateFromFieldsToDatabase(date);
 
 
-        String recurrence_type = et_recurrence_type.getSelectedItem().toString();
+        String recurrence_type = mRecurrenceTypeSpinner.getSelectedItem().toString();
         Float recurrence_value ;
         Float value;
 
@@ -309,16 +354,17 @@ public class AddTransactionActivity extends AppCompatActivity {
         if(recurrence_type.equals(RECURRENCE_TYPES[0])){
             recurrence_value = (float)0.0;
         }else{
-            recurrence_value = Float.parseFloat(et_recurrence_value.getText().toString());
+            recurrence_value = Float.parseFloat(mRecurrenceValueEditText.getText().toString());
         }
 
-        if(et_value.getText().toString().isEmpty()){
+        if(mValueEditText.getText().toString().isEmpty()){
             value = (float) 0.0;
         }else{
-            value = Float.parseFloat(et_value.getText().toString());
+            value = Float.parseFloat(mValueEditText.getText().toString());
         }
-        // id used here is not real
-        transaction_model = new TransactionModel(0,transaction_type,category,"",date,recurrence_type,recurrence_value,value);
+        // id used here is not real id of the transaction
+
+        transaction_model = new TransactionModel(0, mTransactionType,category,mAccount.getText().toString(),date,recurrence_type,recurrence_value,value);
 
         return transaction_model;
     }
@@ -327,34 +373,40 @@ public class AddTransactionActivity extends AppCompatActivity {
     @RequiresApi(api = Build.VERSION_CODES.O)
     protected void putModelOnFields(int transaction_model_id){
 
-        TransactionHandler db_helper = new TransactionHandler(this);
-        TransactionModel transaction_model = db_helper.getTransaction(transaction_model_id);
+        TransactionHandler lvTransactionHandler = new TransactionHandler(AddTransactionActivity.this);
+        TransactionModel lvTransactionModel = lvTransactionHandler.getTransaction(transaction_model_id);
 
         // Return in case the model is null
-        if (transaction_model == null){return;}
+        if (lvTransactionModel == null){return;}
 
         // Update the type we are dealing with
-        transaction_type = transaction_model.getType();
-        TransactionHandler ch = new TransactionHandler(AddTransactionActivity.this);
-        availableCategories =  ch.getAllCategories(transaction_type);
+        mTransactionType = lvTransactionModel.getType();
+
+        // Set the category
+        mAvailableCategories =  lvTransactionHandler.getAllCategories(mTransactionType);
 
         List<String> arr= new ArrayList<String>();
-        for (CategoriesModel cm : availableCategories){
+        for (CategoriesModel cm : mAvailableCategories){
             arr.add(cm.getName());
         }
+        // Set category id
+        mIdOfSelectedCategory =arr.indexOf(lvTransactionModel.getCategory());
+
+        // Set the account
+        mAvailableAccounts = lvTransactionHandler.getAllAccounts(true);
+        mAccount.setText(lvTransactionModel.getAccount());
 
         //Set the text
-        et_category.setText(transaction_model.getCategory());
-
-        // Set category id
-        this.category_id_selected=arr.indexOf(transaction_model.getCategory());
-
-        et_start_date.setText(this.transformDateFromDatabaseToFields(transaction_model.getInitialDate()));
-        et_value.setText(String.valueOf(transaction_model.getValue()));
-        et_recurrence_value.setText(String.valueOf(transaction_model.getRecurrenceValue()));
+        mCategoryEditText.setText(lvTransactionModel.getCategory());
 
 
-        et_recurrence_type.setSelection(((ArrayAdapter)et_recurrence_type.getAdapter()).getPosition(transaction_model.getRecurrenceCategory()));
+
+        mStartDateEditText.setText(this.transformDateFromDatabaseToFields(lvTransactionModel.getInitialDate()));
+        mValueEditText.setText(String.valueOf(lvTransactionModel.getValue()));
+        mRecurrenceValueEditText.setText(String.valueOf(lvTransactionModel.getRecurrenceValue()));
+
+
+        mRecurrenceTypeSpinner.setSelection(((ArrayAdapter) mRecurrenceTypeSpinner.getAdapter()).getPosition(lvTransactionModel.getRecurrenceCategory()));
     }
 
     @RequiresApi(api = Build.VERSION_CODES.O)

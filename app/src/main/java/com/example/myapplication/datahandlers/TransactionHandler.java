@@ -136,7 +136,6 @@ public class TransactionHandler extends SQLiteOpenHelper {
     // TRANSACTION TABLE METHODS
 
     public boolean addTransaction(TransactionModel transaction_model) {
-        transaction_model.setAccount("test");//todo : remove
         return addInstance(transaction_model);
     }
 

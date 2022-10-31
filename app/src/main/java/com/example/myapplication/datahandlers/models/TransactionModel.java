@@ -64,6 +64,10 @@ public class TransactionModel extends InstanceModel {
 
     public int getId() {return id;}
 
+    public String getAccount() {
+        return account;
+    }
+
     public String getType() {
         return type;
     }

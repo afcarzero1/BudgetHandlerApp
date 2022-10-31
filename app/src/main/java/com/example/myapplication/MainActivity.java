@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 
 import com.example.myapplication.common_functionality.HideItemsInterface;
+import com.example.myapplication.common_functionality.UpdateItemsInterface;
 import com.example.myapplication.datahandlers.models.AccountModel;
 import com.example.myapplication.datahandlers.models.CategoriesModel;
 import com.example.myapplication.datahandlers.models.CurrencyModel;
@@ -36,7 +37,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-public class MainActivity extends AppCompatActivity implements HideItemsInterface {
+public class MainActivity extends AppCompatActivity implements HideItemsInterface, UpdateItemsInterface {
 
     private ActivityResultLauncher<Intent> mTransactionLauncher;
     private ActivityResultLauncher<Intent> mCategoryLauncher;
@@ -137,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
         mAccountLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
+                    @RequiresApi(api = Build.VERSION_CODES.N)
                     @Override
                     public void onActivityResult(ActivityResult result) {
                         if(result.getResultCode() == Activity.RESULT_OK){
@@ -292,7 +294,8 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         mAccountLauncher.launch(intent);
     }
 
-    protected void updateTransactionView(){
+    @Override
+    public void updateTransactionView(){
 
         // Create an instance of the database manager
         TransactionHandler th = new TransactionHandler(MainActivity.this);
@@ -313,14 +316,13 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
 
     }
 
-    protected void updateAccountView() {
-
+    @RequiresApi(api = Build.VERSION_CODES.N)
+    public void updateAccountView() {
         List<AccountModel> accounts = new TransactionHandler(MainActivity.this).getAllAccountsBalance(true);
         this.setAccountsAdapater(accounts);
-
     }
 
-    //todo : refactor this methods using some abstarcts class (?)
+    //todo : refactor this methods using some abstract class (?)
     protected void setTransactionAdapter(List<TransactionModel> transactions){
         //todo : implement cleaner way for retireveing the recycler adapter
         TransactionsFragment myFragment = (TransactionsFragment)getSupportFragmentManager().findFragmentByTag("f"+Tabs.TRANSACTIONS.getIndex());
