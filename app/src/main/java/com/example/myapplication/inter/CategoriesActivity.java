@@ -71,6 +71,10 @@ public class CategoriesActivity extends AppCompatActivity {
         this.configureDateField();
         this.configureTypeField();
 
+        //todo set here current month and year and not hard coded
+        this.yearToShow=2022;
+        this.monthToShow=10;
+
         // Display past expenses divided in categories
         this.updateGraph();
     }
@@ -100,20 +104,6 @@ public class CategoriesActivity extends AppCompatActivity {
         String typeToRetrieve=String.valueOf(et_type.getText());
 
         Map<String,Float> categories_to_expense = ch.groupTransactionsBy(typeToRetrieve, TransactionModel.FIELDS.CATEGORY.getSqlName() ,currentYear, currentMonth);
-
-        // Add categories that do not appear (todo : solve this uing left outer join )
-        List<CategoriesModel> categories=ch.getAllCategories(typeToRetrieve);
-
-        if (categories.isEmpty()){
-            return;
-        }
-
-        for (CategoriesModel cm : categories){
-            String category_name = cm.getName();
-            if(!categories_to_expense.containsKey(category_name)){
-                categories_to_expense.put(category_name, (float) 0);
-            }
-        }
 
         this.plotValues2(categories_to_expense);
     }

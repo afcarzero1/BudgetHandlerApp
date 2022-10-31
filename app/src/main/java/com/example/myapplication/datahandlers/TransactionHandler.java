@@ -225,27 +225,49 @@ public class TransactionHandler extends SQLiteOpenHelper {
                 "strftime('%Y',"+TransactionModel.FIELDS.INITIAL_DATE.getSqlName()+")= '"+String.format(Locale.ENGLISH,"%04d", year)+"'"+
                 " GROUP BY " + column + " ORDER BY " + "SUM("+TransactionModel.FIELDS.VALUE.getSqlName()+")";
 
+        //col=category
 
+        query = "SELECT " + CATEGORIES +"."+CategoriesModel.FIELDS.NAME.getSqlName()+","+"reduced_transactions.sum"+
+                " FROM " + CATEGORIES + " " +
+                "LEFT JOIN (SELECT " +column+" AS col,"+"SUM("+TransactionModel.FIELDS.VALUE.getSqlName()+")"+" AS sum"+
+                " FROM " + TRANSACTIONS+
+                " WHERE " + TransactionModel.FIELDS.TYPE.getSqlName() +"='"+ type+ "'"+ " AND "+
+                "strftime('%m',"+TransactionModel.FIELDS.INITIAL_DATE.getSqlName()+")= '"+String.format(Locale.ENGLISH,"%02d", month)+"'"+ " AND "+
+                "strftime('%Y',"+TransactionModel.FIELDS.INITIAL_DATE.getSqlName()+")= '"+String.format(Locale.ENGLISH,"%04d", year)+"'"+
+                " GROUP BY " + column + " ORDER BY " + "SUM("+TransactionModel.FIELDS.VALUE.getSqlName()+")) AS reduced_transactions ON reduced_transactions.col="+CATEGORIES+"."+CategoriesModel.FIELDS.NAME.getSqlName()+"" +
+                " WHERE " + CategoriesModel.FIELDS.TYPE.getSqlName() +"='"+ type+ "'"+
+                " ORDER BY 2";
+
+        /*query = "SELECT CATEGORIES.NAME, ISNULL(reduced_transactions.sum,0) " +
+                "FROM CATEGORIES " +
+                "LEFT JOIN " +
+                "(SELECT CATEGORY AS col,SUM(VALUE) AS sum FROM TRANSACTIONS WHERE TYPE='Expense' AND strftime('%m',INITIAL_DATE)= '00' AND strftime('%Y',INITIAL_DATE)= '0000' GROUP BY CATEGORY ORDER BY SUM(VALUE)) " +
+                "AS reduced_transactions ON reduced_transactions.col=CATEGORIES.NAME ORDER BY 2";
+*/
         Cursor cursor  = db.rawQuery(query,null);
 
         // The map represents association between a category and the expenses in a given month
 
-        Map<String,Float> itemIds = new HashMap<String, Float>();
+        Map<String,Float> lvCategoryToExpense = new HashMap<String, Float>();
         if (cursor.moveToFirst()){
             do {
                 String grouped_name = cursor.getString(0);
                 Float value = cursor.getFloat(1);
-                itemIds.put(grouped_name,value);
+                lvCategoryToExpense.put(grouped_name,value);
             }while (cursor.moveToNext());
 
         }else{
             // Database is empty
 
         }
+
+
+
+
         cursor.close();
         db.close();
 
-        return itemIds;
+        return lvCategoryToExpense;
     }
 
     // CATEGORY TABLE METHODS
