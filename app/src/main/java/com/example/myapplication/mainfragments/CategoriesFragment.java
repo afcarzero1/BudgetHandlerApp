@@ -105,9 +105,13 @@ public class CategoriesFragment extends Fragment {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
                                             TransactionHandler db = new TransactionHandler(getActivity());
-                                            final boolean success = db.deleteCategory(categoryName,categoryType);
-                                            if(success){
-                                                Toast.makeText(getActivity(),"Successfully deleted",Toast.LENGTH_SHORT).show();
+                                            try {
+                                                final boolean success = db.deleteCategory(categoryName,categoryType);
+                                                if(success){
+                                                    Toast.makeText(getActivity(),"Successfully deleted",Toast.LENGTH_SHORT).show();
+                                                }else{Toast.makeText(getActivity(),"Deletion Failed",Toast.LENGTH_LONG).show();}
+                                            }catch (Exception e){
+                                                Toast.makeText(getActivity(),"Deletion Failed",Toast.LENGTH_LONG).show();
                                             }
                                             updateCategoriesView();
                                         }

@@ -10,8 +10,10 @@ import androidx.viewpager2.widget.ViewPager2;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.View;
 
@@ -29,6 +31,7 @@ import com.example.myapplication.inter.AddTransactionActivity;
 import com.example.myapplication.inter.CategoriesActivity;
 import com.example.myapplication.mainfragments.AccountsFragment;
 import com.example.myapplication.mainfragments.CategoriesFragment;
+import com.example.myapplication.mainfragments.InitialFragment;
 import com.example.myapplication.mainfragments.MainFragmentAdapter;
 import com.example.myapplication.mainfragments.TransactionsFragment;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -84,20 +87,15 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         setTitle("Budget Handler");
 
 
-
-
-
-
-        TransactionHandler th = new TransactionHandler(this);
-        Node<String> root = th.buildCategoryTree(TransactionHandler.TYPE_EXPENSE);
-        th.addCurrency(new CurrencyModel("eur"));
-        List<AccountModel> a = th.getAllAccounts(true);
-        th.addAccount(new AccountModel("test","eur",(float)0));
-        a = th.getAllAccounts(true);
-
         // Add root categories
-        th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_EXPENSE,null,null));
-        th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_INCOME,null,null));
+        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        if (!prefs.getBoolean("firstTime", false)) {
+            TransactionHandler th = new TransactionHandler(this);
+            th.addCurrency(new CurrencyModel("eur")); // todo : modify for more flexible currency support
+            th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_EXPENSE,null,null));
+            th.addCategory(new CategoriesModel("base",TransactionHandler.TYPE_INCOME,null,null));
+        }
+
 
         //List<CategoriesModel> l = th.getAllCategories(true);
 
@@ -117,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
                 new ActivityResultContracts.StartActivityForResult(),
                 new ActivityResultCallback<ActivityResult>() {
 
+                    @RequiresApi(api = Build.VERSION_CODES.O)
                     @Override
                     public void onActivityResult(ActivityResult result) {
                         // Handle the returned Uri
@@ -301,6 +300,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
         mAccountLauncher.launch(intent);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void updateTransactionView(){
 
@@ -330,11 +330,17 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
     }
 
     //todo : refactor this methods using some abstract class (?)
+    @RequiresApi(api = Build.VERSION_CODES.O)
     protected void setTransactionAdapter(List<TransactionModel> transactions){
         //todo : implement cleaner way for retireveing the recycler adapter
         TransactionsFragment myFragment = (TransactionsFragment)getSupportFragmentManager().findFragmentByTag("f"+Tabs.TRANSACTIONS.getIndex());
         if(myFragment != null && myFragment.isAdded()){
             myFragment.setTransactionAdapter(transactions);
+        }
+
+        InitialFragment iniFrag = (InitialFragment) getSupportFragmentManager().findFragmentByTag("f"+Tabs.HOME);
+        if(iniFrag != null && iniFrag.isAdded()){
+            iniFrag.updateGraph();
         }
     }
 

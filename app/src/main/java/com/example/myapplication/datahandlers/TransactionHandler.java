@@ -2,9 +2,11 @@ package com.example.myapplication.datahandlers;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -208,7 +210,7 @@ public class TransactionHandler extends SQLiteOpenHelper {
         if (result.isEmpty()){return null;}else{return result.get(0);}
     }
 
-    public Map<String,Float> groupTransactionsBy(String type, String column, int year, int month){
+    public Map<String,Float> groupTransactionsByCategory(String type, String column, int year, int month){
         SQLiteDatabase db = this.getReadableDatabase();
 
 
@@ -240,7 +242,7 @@ public class TransactionHandler extends SQLiteOpenHelper {
 
         // The map represents association between a category and the expenses in a given month
 
-        Map<String,Float> lvCategoryToExpense = new HashMap<String, Float>();
+        Map<String,Float> lvCategoryToExpense = new LinkedHashMap<String, Float>();
         if (cursor.moveToFirst()){
             do {
                 String grouped_name = cursor.getString(0);
@@ -259,12 +261,11 @@ public class TransactionHandler extends SQLiteOpenHelper {
         return lvCategoryToExpense;
     }
 
-
-    public Map<String,Float> groupTransactionsBy(String baseColumn,String type, String column, int year, int month){
+    public Map<String,Float> groupTransactionsByCategory(String baseColumn, String type, String column, int year, int month){
 
         Node<String> lvCategoryTree=buildCategoryTree(type);
-        Map<String,Float> lvCategoryToExpenseAllCategories = groupTransactionsBy(type,column,year,month);
-        Map<String,Float> lvCategoryToExpense = new HashMap<>();
+        Map<String,Float> lvCategoryToExpenseAllCategories = groupTransactionsByCategory(type,column,year,month);
+        Map<String,Float> lvCategoryToExpense = new LinkedHashMap<>();
 
         Node<String> baseNode;
         // show only direct child of the parent
@@ -285,6 +286,41 @@ public class TransactionHandler extends SQLiteOpenHelper {
 
         return lvCategoryToExpense;
     }
+
+    public Map<String,Float> groupTransactionsByMonthYear(String type){
+
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT  year,month,SUM(value) FROM " +
+                "(SELECT " + "strftime('%Y',"+TransactionModel.FIELDS.INITIAL_DATE.getSqlName()+") AS year ,"+
+                "strftime('%m',"+TransactionModel.FIELDS.INITIAL_DATE.getSqlName()+") AS month ,"+
+                TransactionModel.FIELDS.VALUE.getSqlName() + " AS value " +
+                " FROM " + TRANSACTIONS +" WHERE "+ TransactionModel.FIELDS.TYPE.getSqlName() +"='"+ type+ "'"+")"+
+                " GROUP BY year,month " +
+                " ORDER BY year,month DESC";
+
+
+        Cursor cursor = db.rawQuery(query,null);
+
+        Map<String,Float> yearToValue = new LinkedHashMap<>();
+        if(cursor.moveToFirst()){
+
+            do{
+                String lvYear = cursor.getString(0);
+                String lvMonth = cursor.getString(1);
+                Float lvSum = cursor.getFloat(2);
+
+                String identifier = lvYear + "/" + lvMonth;
+                yearToValue.put(identifier,lvSum);
+            }while(cursor.moveToNext());
+
+        }
+
+        cursor.close();
+        db.close();
+
+        return yearToValue;
+    }
+
 
     // CATEGORY TABLE METHODS
 
@@ -346,7 +382,7 @@ public class TransactionHandler extends SQLiteOpenHelper {
             Node<String> parentNode = lvCategoryToNode.get(parentName);
             if(parentNode==null){continue;} // Statement for the base
 
-            if(parentName == childName){throw new RuntimeException("Illegal relationship (node is its own parent)");}
+            if(Objects.equals(parentName, childName)){throw new RuntimeException("Illegal relationship (node is its own parent)");}
             // Add the child
             parentNode.addChild(node);
         }

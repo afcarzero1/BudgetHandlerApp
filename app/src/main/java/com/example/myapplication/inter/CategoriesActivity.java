@@ -112,7 +112,7 @@ public class CategoriesActivity extends AppCompatActivity {
         String typeToRetrieve=String.valueOf(mTypeTextView.getText());
         String baseCategory = mBaseCategorySpinner.getSelectedItem().toString();
 
-        Map<String,Float> categories_to_expense = ch.groupTransactionsBy(baseCategory,typeToRetrieve, TransactionModel.FIELDS.CATEGORY.getSqlName() ,currentYear, currentMonth);
+        Map<String,Float> categories_to_expense = ch.groupTransactionsByCategory(baseCategory,typeToRetrieve, TransactionModel.FIELDS.CATEGORY.getSqlName() ,currentYear, currentMonth);
 
         this.plotValues2(categories_to_expense);
     }
@@ -234,6 +234,7 @@ public class CategoriesActivity extends AppCompatActivity {
         barDataSet.setFormSize(15f);
         barDataSet.setDrawValues(true);
         barDataSet.setValueTextSize(12f);
+
         return barDataSet;
     }
 
