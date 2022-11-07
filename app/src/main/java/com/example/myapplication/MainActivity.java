@@ -338,7 +338,7 @@ public class MainActivity extends AppCompatActivity implements HideItemsInterfac
             myFragment.setTransactionAdapter(transactions);
         }
 
-        InitialFragment iniFrag = (InitialFragment) getSupportFragmentManager().findFragmentByTag("f"+Tabs.HOME);
+        InitialFragment iniFrag = (InitialFragment) getSupportFragmentManager().findFragmentByTag("f"+Tabs.HOME.getIndex());
         if(iniFrag != null && iniFrag.isAdded()){
             iniFrag.updateGraph();
         }
